@@ -34,8 +34,8 @@ CGigEMetaDataDemoDlg::CGigEMetaDataDemoDlg(CWnd* pParent)
 
    // Note that LoadIcon does not require a subsequent DestroyIcon in Win32
    m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-
-   m_AcqDevice1 = NULL;
+   m_AcqDevice.resize(3);
+   std::vector<SapAcqDevice*> m_AcqDevice(3, NULL); //https://stackoverflow.com/questions/5887615/creating-an-array-of-object-pointers-c
    m_Feature1 = NULL;
    m_Buffers1 = NULL;
    m_Xfer1 = NULL;
@@ -252,18 +252,22 @@ BOOL CGigEMetaDataDemoDlg::OnInitDialog(void)
       return FALSE;
    }
 
-   // Define objects
-   m_AcqDevice1 = new SapAcqDevice(dlg.GetLocation(), dlg.GetConfigFile());
-   
    //Test code
    CString str;
-   str = dlg.GetLocation().GetServerName();
+   //str = dlg.GetLocation().GetServerName();
+   char* acqServerName = new char[CORSERVER_MAX_STRLEN];
+   int serverCount = SapManager::GetServerCount(SapManager::ResourceAcqDevice); //Only count cameras
+//   int deviceCount = SapManager::GetResourceCount(acqServerName, SapManager::ResourceAcq);
+//   int cameraCount = SapManager::GetResourceCount(acqServerName, SapManager::ResourceAcqDevice);
+   str.Format(_T("%d"), serverCount);
    MessageBox(str);
 
+   // Define objects
+   m_AcqDevice[0] = new SapAcqDevice(dlg.GetLocation(), dlg.GetConfigFile());
    m_Feature1 = new SapFeature(dlg.GetLocation());
    m_Buffers1 = new SapBufferWithTrash(MAX_BUFFER);
-   m_Metadata1 = new SapMetadata(m_AcqDevice1, m_Buffers1);
-   m_Xfer1 = new SapAcqDeviceToBuf(m_AcqDevice1, m_Buffers1, XferCallback, this);
+   m_Metadata1 = new SapMetadata(m_AcqDevice[0], m_Buffers1);
+   m_Xfer1 = new SapAcqDeviceToBuf(m_AcqDevice[0], m_Buffers1, XferCallback, this);
    m_View1 = new SapView(m_Buffers1);
 
    // Attach sapview to image viewer
@@ -296,14 +300,14 @@ BOOL CGigEMetaDataDemoDlg::CreateObjects(bool createAcqDevice)
    int nFramesPerCallback;
 
    // Create acquisition object
-   if (createAcqDevice && m_AcqDevice1 && !*m_AcqDevice1 && !m_AcqDevice1->Create())
+   if (createAcqDevice && m_AcqDevice[0] && !*m_AcqDevice[0] && !m_AcqDevice[0]->Create())
    {
       DestroyObjects();
       return FALSE;
    }
 
    // Make sure the acq device supports mandatory metadata features
-   if (!SapMetadata::IsMetadataSupported(m_AcqDevice1))
+   if (!SapMetadata::IsMetadataSupported(m_AcqDevice[0]))
    {
       MessageBox(_T("This demo only supports Teledyne Dalsa and Teledyne Lumenera cameras with metadata features"),
                  _T("Incompatible camera"), MB_ICONERROR);
@@ -330,7 +334,7 @@ BOOL CGigEMetaDataDemoDlg::CreateObjects(bool createAcqDevice)
    // Check if metadata selectors can be enabled through application code
    m_IsSelectAvailable = FALSE;
    char* featurename = m_IsAreaScan ? "ChunkEnable" : "endOfLineMetadataContentActivationMode";
-   if (m_AcqDevice1->GetFeatureInfo(featurename, m_Feature1))
+   if (m_AcqDevice[0]->GetFeatureInfo(featurename, m_Feature1))
    {
       SapFeature::AccessMode accessMode;
       if (m_Feature1->GetAccessMode(&accessMode))
@@ -340,7 +344,7 @@ BOOL CGigEMetaDataDemoDlg::CreateObjects(bool createAcqDevice)
    // Check if the transfer needs to remain disconnected when enabling / disabling / selecting metadata
    m_XferDisconnectDuringSetup = FALSE;
    featurename = m_IsAreaScan ? "ChunkModeActive" : "endOfLineMetadataMode";
-   if (m_AcqDevice1->GetFeatureInfo(featurename, m_Feature1))
+   if (m_AcqDevice[0]->GetFeatureInfo(featurename, m_Feature1))
    {
       SapFeature::WriteMode writeMode;
       if (m_Feature1->GetWriteMode(&writeMode))
@@ -490,8 +494,8 @@ BOOL CGigEMetaDataDemoDlg::DestroyObjects(bool destroyAcqDevice)
       m_Feature1->Destroy();
 
    // Destroy acquisition object
-   if (destroyAcqDevice && m_AcqDevice1 && *m_AcqDevice1)
-      m_AcqDevice1->Destroy();
+   if (destroyAcqDevice && m_AcqDevice[0] && *m_AcqDevice[0])
+      m_AcqDevice[0]->Destroy();
 
    return TRUE;
 }
@@ -522,7 +526,7 @@ void CGigEMetaDataDemoDlg::OnBnClickedMetadataActiveMode()
    // Check if metadata selectors can be enabled through application code
    m_IsSelectAvailable = FALSE;
    char* featurename = m_IsAreaScan ? "ChunkEnable" : "endOfLineMetadataContentActivationMode";
-   if (m_AcqDevice1->GetFeatureInfo(featurename, m_Feature1))
+   if (m_AcqDevice[0]->GetFeatureInfo(featurename, m_Feature1))
    {
       SapFeature::AccessMode accessMode;
       if (m_Feature1->GetAccessMode(&accessMode))
@@ -673,7 +677,7 @@ void CGigEMetaDataDemoDlg::OnDestroy(void)
    if (m_Buffers1)		delete m_Buffers1;
    if (m_Metadata1)   delete m_Metadata1;
    if (m_Feature1)	   delete m_Feature1;
-   if (m_AcqDevice1)	delete m_AcqDevice1;
+   if (m_AcqDevice[0])	delete m_AcqDevice[0];
 }
 
 //==============================================================================
@@ -1142,19 +1146,19 @@ void CGigEMetaDataDemoDlg::OnBnClickedLoadAcqConfig(void)
       DestroyObjects();
 
       // Backup
-      SapLocation loc = m_AcqDevice1->GetLocation();
-      const char* configFile = m_AcqDevice1->GetConfigFile();
+      SapLocation loc = m_AcqDevice[0]->GetLocation();
+      const char* configFile = m_AcqDevice[0]->GetConfigFile();
 
       // Update object
-      m_AcqDevice1->SetLocation(dlg.GetLocation());
-      m_AcqDevice1->SetConfigFile(dlg.GetConfigFile());
+      m_AcqDevice[0]->SetLocation(dlg.GetLocation());
+      m_AcqDevice[0]->SetConfigFile(dlg.GetConfigFile());
       m_Feature1->SetLocation(dlg.GetLocation());
 
       // Recreate objects
       if (!CreateObjects())
       {
-         m_AcqDevice1->SetLocation(loc);
-         m_AcqDevice1->SetConfigFile(configFile);
+         m_AcqDevice[0]->SetLocation(loc);
+         m_AcqDevice[0]->SetConfigFile(configFile);
          m_Feature1->SetLocation(loc);
          CreateObjects();
       }
@@ -1278,37 +1282,37 @@ void CGigEMetaDataDemoDlg::ReadCameraTimestamp(void)
    BOOL bIsAvailable = FALSE;
 
    // Current feature name in SFNC
-   if (m_AcqDevice1->IsFeatureAvailable("TimestampLatch", &bIsAvailable) && bIsAvailable)
+   if (m_AcqDevice[0]->IsFeatureAvailable("TimestampLatch", &bIsAvailable) && bIsAvailable)
    {
-      m_AcqDevice1->SetFeatureValue("TimestampLatch", 1);
+      m_AcqDevice[0]->SetFeatureValue("TimestampLatch", 1);
    }
    // Deprecated in SFNC
-   else if (m_AcqDevice1->IsFeatureAvailable("GevTimestampControlLatch", &bIsAvailable) && bIsAvailable)
+   else if (m_AcqDevice[0]->IsFeatureAvailable("GevTimestampControlLatch", &bIsAvailable) && bIsAvailable)
    {
-      m_AcqDevice1->SetFeatureValue("GevTimestampControlLatch", 1);
+      m_AcqDevice[0]->SetFeatureValue("GevTimestampControlLatch", 1);
    }
    // Specific to Teledyne DALSA
-   else if (m_AcqDevice1->IsFeatureAvailable("timestampControlLatch", &bIsAvailable) && bIsAvailable)
+   else if (m_AcqDevice[0]->IsFeatureAvailable("timestampControlLatch", &bIsAvailable) && bIsAvailable)
    {
-      m_AcqDevice1->SetFeatureValue("timestampControlLatch", 1);
+      m_AcqDevice[0]->SetFeatureValue("timestampControlLatch", 1);
    }
 
    UINT64 timestamp = 0;
 
    // Current feature name in SFNC
-   if (m_AcqDevice1->IsFeatureAvailable("TimestampLatchValue", &bIsAvailable) && bIsAvailable)
+   if (m_AcqDevice[0]->IsFeatureAvailable("TimestampLatchValue", &bIsAvailable) && bIsAvailable)
    {
-      m_AcqDevice1->GetFeatureValue("TimestampLatchValue", &timestamp);
+      m_AcqDevice[0]->GetFeatureValue("TimestampLatchValue", &timestamp);
    }
    // Deprecated in SFNC
-   else if (m_AcqDevice1->IsFeatureAvailable("GevTimestampValue", &bIsAvailable) && bIsAvailable)
+   else if (m_AcqDevice[0]->IsFeatureAvailable("GevTimestampValue", &bIsAvailable) && bIsAvailable)
    {
-      m_AcqDevice1->GetFeatureValue("GevTimestampValue", &timestamp);
+      m_AcqDevice[0]->GetFeatureValue("GevTimestampValue", &timestamp);
    }
    // Specific to Teledyne DALSA
-   else if (m_AcqDevice1->IsFeatureAvailable("timestampValue", &bIsAvailable) && bIsAvailable)
+   else if (m_AcqDevice[0]->IsFeatureAvailable("timestampValue", &bIsAvailable) && bIsAvailable)
    {
-      m_AcqDevice1->GetFeatureValue("timestampValue", &timestamp);
+      m_AcqDevice[0]->GetFeatureValue("timestampValue", &timestamp);
    }
 
    char strBuf[64];
@@ -1328,19 +1332,19 @@ void CGigEMetaDataDemoDlg::OnBnClickedResetTimestamp()
    BOOL bIsAvailable = FALSE;
 
    // Current feature name in SFNC
-   if (m_AcqDevice1->IsFeatureAvailable("TimestampReset", &bIsAvailable) && bIsAvailable)
+   if (m_AcqDevice[0]->IsFeatureAvailable("TimestampReset", &bIsAvailable) && bIsAvailable)
    {
-      m_AcqDevice1->SetFeatureValue("TimestampReset", 1);
+      m_AcqDevice[0]->SetFeatureValue("TimestampReset", 1);
    }
    // Deprecated in SFNC
-   else if (m_AcqDevice1->IsFeatureAvailable("GevTimestampControlReset", &bIsAvailable) && bIsAvailable)
+   else if (m_AcqDevice[0]->IsFeatureAvailable("GevTimestampControlReset", &bIsAvailable) && bIsAvailable)
    {
-      m_AcqDevice1->SetFeatureValue("GevTimestampControlReset", 1);
+      m_AcqDevice[0]->SetFeatureValue("GevTimestampControlReset", 1);
    }
    // Specific to Teledyne DALSA
-   else if (m_AcqDevice1->IsFeatureAvailable("timestampControlReset", &bIsAvailable) && bIsAvailable)
+   else if (m_AcqDevice[0]->IsFeatureAvailable("timestampControlReset", &bIsAvailable) && bIsAvailable)
    {
-      m_AcqDevice1->SetFeatureValue("timestampControlReset", 1);
+      m_AcqDevice[0]->SetFeatureValue("timestampControlReset", 1);
    }
    else
    {
