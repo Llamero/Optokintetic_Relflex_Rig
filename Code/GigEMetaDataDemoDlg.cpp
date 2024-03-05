@@ -30,6 +30,7 @@ CGigEMetaDataDemoDlg::CGigEMetaDataDemoDlg(CWnd* pParent)
    m_ActiveBuffer = 0;
    m_BufferCount = 0;
    m_Slider = 0;
+   serverSelection = 0;
    //}}AFX_DATA_INIT
 
    // Note that LoadIcon does not require a subsequent DestroyIcon in Win32
@@ -250,8 +251,8 @@ BOOL CGigEMetaDataDemoDlg::OnInitDialog(void)
    CString str;
    SapLocation location;
    int resourceIndex = dlg.GetLocation().GetResourceIndex(); //Get index of resource (normally 0)
-   int selectionIndex = dlg.GetLocation().GetServerIndex(); //Get selected camera index
-   str.Format(_T("Resource #%d, Selection #%d"), resourceIndex, selectionIndex);
+   serverSelection = dlg.GetLocation().GetServerIndex(); //Get selected camera index
+   str.Format(_T("Resource #%d, Selection #%d"), resourceIndex, serverSelection);
    if (debug) MessageBox(str);
    char serverName[CORSERVER_MAX_STRLEN];
    for (int serverIndex = 0; serverIndex < serverCount; serverIndex++) {
@@ -267,9 +268,9 @@ BOOL CGigEMetaDataDemoDlg::OnInitDialog(void)
    }
 
    // Attach sapview to image viewer to the selected camera
-   str.Format(_T("Attach view to %d"), selectionIndex);
+   str.Format(_T("Attach view to %d"), serverSelection);
    if (debug) MessageBox(str);
-   m_View[selectionIndex - 1] = new SapView(m_Buffers[selectionIndex-1]);
+   m_View[0] = new SapView(m_Buffers[serverSelection-1]);
    m_ImageWnd1.AttachSapView(m_View[0]);
 
    // Create all objects
