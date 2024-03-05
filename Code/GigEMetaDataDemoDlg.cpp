@@ -11,7 +11,7 @@
 #include "GigEMetaDataDemoAbout.h"
 #include "float.h"
 
-
+#define debug true
 
 //==============================================================================
 // Name      : CGigEMetaDataDemoDlg::CGigEMetaDataDemoDlg
@@ -34,29 +34,22 @@ CGigEMetaDataDemoDlg::CGigEMetaDataDemoDlg(CWnd* pParent)
 
    // Note that LoadIcon does not require a subsequent DestroyIcon in Win32
    m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-   m_AcqDevice.resize(3);
-   std::vector<SapAcqDevice*> m_AcqDevice(3, NULL); //https://stackoverflow.com/questions/5887615/creating-an-array-of-object-pointers-c
-   m_Feature1 = NULL;
-   m_Buffers1 = NULL;
-   m_Xfer1 = NULL;
-   m_View1 = NULL;
-   m_Metadata1 = NULL;
-
-   m_AcqDevice2 = NULL;
-   m_Feature2 = NULL;
-   m_Buffers2 = NULL;
-   m_Xfer2 = NULL;
-   m_View2 = NULL;
-   m_Metadata2 = NULL;
-
-   m_AcqDevice3 = NULL;
-   m_Feature3 = NULL;
-   m_Buffers3 = NULL;
-   m_Xfer3 = NULL;
-   m_View3 = NULL;
-   m_Metadata3 = NULL;
-
-
+   int serverCount = SapManager::GetServerCount(SapManager::ResourceAcqDevice); //Only count cameras
+   CString str;
+   str.Format(_T("Cameras Found: %d"), serverCount);
+   if(debug) MessageBox(str);
+   m_AcqDevice.resize(serverCount);
+   std::vector<SapAcqDevice*> m_AcqDevice(serverCount, NULL); //https://stackoverflow.com/questions/5887615/creating-an-array-of-object-pointers-c
+   m_Feature.resize(serverCount);
+   std::vector<SapAcqDevice*> m_Feature(serverCount, NULL); //https://stackoverflow.com/questions/5887615/creating-an-array-of-object-pointers-c
+   m_Buffers.resize(serverCount);
+   std::vector<SapAcqDevice*> m_Buffers(serverCount, NULL); //https://stackoverflow.com/questions/5887615/creating-an-array-of-object-pointers-c
+   m_Xfer.resize(serverCount);
+   std::vector<SapAcqDevice*> m_Xfer(serverCount, NULL); //https://stackoverflow.com/questions/5887615/creating-an-array-of-object-pointers-c
+   m_View.resize(serverCount);
+   std::vector<SapAcqDevice*> m_View(serverCount, NULL); //https://stackoverflow.com/questions/5887615/creating-an-array-of-object-pointers-c
+   m_Metadata.resize(serverCount);
+   std::vector<SapAcqDevice*> m_Metadata(serverCount, NULL); //https://stackoverflow.com/questions/5887615/creating-an-array-of-object-pointers-c
 
    m_metadataType = SapMetadata::MetadataUnknown;
 
@@ -158,9 +151,9 @@ void CGigEMetaDataDemoDlg::XferCallback(SapXferCallbackInfo* pInfo)
    CGigEMetaDataDemoDlg* pDlg = (CGigEMetaDataDemoDlg*)pInfo->GetContext();
 
    SapBuffer::State bufState = SapBuffer::StateEmpty;
-   int bufIndex = pDlg->m_Buffers1->GetIndex();
+   int bufIndex = pDlg->m_Buffers[0]->GetIndex();
 
-   pDlg->m_Buffers1->GetState(bufIndex, &bufState);
+   pDlg->m_Buffers[0]->GetState(bufIndex, &bufState);
    pDlg->m_BufferIsValid[bufIndex] = (bufState == SapBuffer::StateFull);
 
    // Measure real frame time
@@ -170,7 +163,7 @@ void CGigEMetaDataDemoDlg::XferCallback(SapXferCallbackInfo* pInfo)
    pDlg->CheckForLastFrame();
 
    // Refresh view
-   pDlg->m_View1->Show();
+   pDlg->m_View[0]->Show();
 
    // Refresh controls
    pDlg->PostMessage(WM_UPDATE_CONTROLS, 0, 0);
@@ -252,32 +245,44 @@ BOOL CGigEMetaDataDemoDlg::OnInitDialog(void)
       return FALSE;
    }
 
-   //Test code
-   CString str;
-   //str = dlg.GetLocation().GetServerName();
-   char* acqServerName = new char[CORSERVER_MAX_STRLEN];
-   int serverCount = SapManager::GetServerCount(SapManager::ResourceAcqDevice); //Only count cameras
-//   int deviceCount = SapManager::GetResourceCount(acqServerName, SapManager::ResourceAcq);
-//   int cameraCount = SapManager::GetResourceCount(acqServerName, SapManager::ResourceAcqDevice);
-   str.Format(_T("%d"), serverCount);
-   MessageBox(str);
-
    // Define objects
-   m_AcqDevice[0] = new SapAcqDevice(dlg.GetLocation(), dlg.GetConfigFile());
-   m_Feature1 = new SapFeature(dlg.GetLocation());
-   m_Buffers1 = new SapBufferWithTrash(MAX_BUFFER);
-   m_Metadata1 = new SapMetadata(m_AcqDevice[0], m_Buffers1);
-   m_Xfer1 = new SapAcqDeviceToBuf(m_AcqDevice[0], m_Buffers1, XferCallback, this);
-   m_View1 = new SapView(m_Buffers1);
+   serverCount = SapManager::GetServerCount(SapManager::ResourceAcqDevice); //Only count cameras
+   CString str;
+   SapLocation location;
+   int resourceIndex = dlg.GetLocation().GetResourceIndex(); //Get index of resource (normally 0)
+   int selectionIndex = dlg.GetLocation().GetServerIndex(); //Get selected camera index
+   str.Format(_T("Resource #%d, Selection #%d"), resourceIndex, selectionIndex);
+   if (debug) MessageBox(str);
+   char serverName[CORSERVER_MAX_STRLEN];
+   for (int serverIndex = 0; serverIndex < serverCount; serverIndex++) {
+       SapManager::GetServerName(serverIndex+1, serverName, sizeof(serverName)); //Get Server name
+       location = SapLocation(CStringA(serverName), resourceIndex);
+       str.Format(_T("Initializing device #%d - %s"), serverIndex, CString(serverName));
+       if(debug) MessageBox(str);
+       m_AcqDevice[serverIndex] = new SapAcqDevice(location, dlg.GetConfigFile());
+       m_Feature[serverIndex] = new SapFeature(location);
+       m_Buffers[serverIndex] = new SapBufferWithTrash(MAX_BUFFER);
+       m_Metadata[serverIndex] = new SapMetadata(m_AcqDevice[serverIndex], m_Buffers[serverIndex]);
+       m_Xfer[serverIndex] = new SapAcqDeviceToBuf(m_AcqDevice[serverIndex], m_Buffers[serverIndex], XferCallback, this);
+   }
 
-   // Attach sapview to image viewer
-   m_ImageWnd1.AttachSapView(m_View1);
+   // Attach sapview to image viewer to the selected camera
+   str.Format(_T("Attach view to %d"), selectionIndex);
+   if (debug) MessageBox(str);
+   m_View[selectionIndex - 1] = new SapView(m_Buffers[selectionIndex-1]);
+   m_ImageWnd1.AttachSapView(m_View[0]);
 
    // Create all objects
-   if (!CreateObjects())
-   {
-      EndDialog(TRUE);
-      return FALSE;
+   serverCount = SapManager::GetServerCount(SapManager::ResourceAcqDevice); //Only count cameras
+   for (int serverIndex = serverCount-1; serverIndex > -1; serverIndex--) {
+       //createView = (*m_View[serverIndex] != NULL); //Build view object only if it isn't null
+       str.Format(_T("Building device #%d."), serverIndex);
+       if (debug) { MessageBox(str); }
+       if (!CreateObjects(serverIndex))
+       {
+           EndDialog(TRUE);
+           return FALSE;
+       }
    }
 
    // Create image window
@@ -294,94 +299,100 @@ BOOL CGigEMetaDataDemoDlg::OnInitDialog(void)
 // Purpose   : Create sapera objects.
 // Parameters: None
 //==============================================================================
-BOOL CGigEMetaDataDemoDlg::CreateObjects(bool createAcqDevice)
+BOOL CGigEMetaDataDemoDlg::CreateObjects(int deviceIndex, bool createView, bool createAcqDevice)
 {
+   CString str;
+
    //Number of frames per callback retreived
    int nFramesPerCallback;
 
    // Create acquisition object
-   if (createAcqDevice && m_AcqDevice[0] && !*m_AcqDevice[0] && !m_AcqDevice[0]->Create())
+   if (createAcqDevice && m_AcqDevice[deviceIndex] && !*m_AcqDevice[deviceIndex] && !m_AcqDevice[deviceIndex]->Create())
    {
-      DestroyObjects();
+      DestroyObjects(deviceIndex);
       return FALSE;
    }
 
    // Make sure the acq device supports mandatory metadata features
-   if (!SapMetadata::IsMetadataSupported(m_AcqDevice[0]))
+   if (!SapMetadata::IsMetadataSupported(m_AcqDevice[deviceIndex]))
    {
       MessageBox(_T("This demo only supports Teledyne Dalsa and Teledyne Lumenera cameras with metadata features"),
                  _T("Incompatible camera"), MB_ICONERROR);
-      DestroyObjects();
+      DestroyObjects(deviceIndex);
       return FALSE;
    }
 
    // Create feature object
-   if (m_Feature1 && !*m_Feature1 && !m_Feature1->Create())
+   if (m_Feature[deviceIndex] && !*m_Feature[deviceIndex] && !m_Feature[deviceIndex]->Create())
    {
-      DestroyObjects();
+      DestroyObjects(deviceIndex);
       return FALSE;
    }
 
    // Create metadata object
-   if (m_Metadata1 && !*m_Metadata1 && !m_Metadata1->Create())
+   if (m_Metadata[deviceIndex] && !*m_Metadata[deviceIndex] && !m_Metadata[deviceIndex]->Create())
    {
-      DestroyObjects();
+      DestroyObjects(deviceIndex);
       return FALSE;
    }
 
-   m_IsAreaScan = (m_Metadata1->GetMetadataType() == SapMetadata::MetadataPerFrame);
+   m_IsAreaScan = (m_Metadata[deviceIndex]->GetMetadataType() == SapMetadata::MetadataPerFrame);
 
    // Check if metadata selectors can be enabled through application code
    m_IsSelectAvailable = FALSE;
    char* featurename = m_IsAreaScan ? "ChunkEnable" : "endOfLineMetadataContentActivationMode";
-   if (m_AcqDevice[0]->GetFeatureInfo(featurename, m_Feature1))
+   if (m_AcqDevice[deviceIndex]->GetFeatureInfo(featurename, m_Feature[deviceIndex]))
    {
       SapFeature::AccessMode accessMode;
-      if (m_Feature1->GetAccessMode(&accessMode))
+      if (m_Feature[deviceIndex]->GetAccessMode(&accessMode))
          m_IsSelectAvailable = (accessMode == SapFeature::AccessRW);
    }
 
    // Check if the transfer needs to remain disconnected when enabling / disabling / selecting metadata
    m_XferDisconnectDuringSetup = FALSE;
    featurename = m_IsAreaScan ? "ChunkModeActive" : "endOfLineMetadataMode";
-   if (m_AcqDevice[0]->GetFeatureInfo(featurename, m_Feature1))
+   if (m_AcqDevice[deviceIndex]->GetFeatureInfo(featurename, m_Feature[deviceIndex]))
    {
       SapFeature::WriteMode writeMode;
-      if (m_Feature1->GetWriteMode(&writeMode))
+      if (m_Feature[deviceIndex]->GetWriteMode(&writeMode))
          m_XferDisconnectDuringSetup = (writeMode == SapFeature::WriteNotConnected);
    }
 
    // Create buffer object
-   if (m_Buffers1 && !*m_Buffers1)
+   if (m_Buffers[deviceIndex] && !*m_Buffers[deviceIndex])
    {
-      if (!m_Buffers1->Create())
+      if (!m_Buffers[deviceIndex]->Create())
       {
-         DestroyObjects();
+         DestroyObjects(deviceIndex);
          return FALSE;
       }
       // Clear all buffers
-      m_Buffers1->Clear();
+      m_Buffers[deviceIndex]->Clear();
 
-      m_BufferIsValid = new BOOL[m_Buffers1->GetCount()];
+      m_BufferIsValid = new BOOL[m_Buffers[deviceIndex]->GetCount()];
    }
 
    // Create view object
-   if (m_View1 && !*m_View1 && !m_View1->Create())
-   {
-      DestroyObjects();
-      return FALSE;
+   if (deviceIndex == 0) {
+       str.Format(_T("Build view 1"));
+       if (debug) MessageBox(str);
+       if (m_View[deviceIndex] && !*m_View[deviceIndex] && !m_View[deviceIndex]->Create())
+       {
+           DestroyObjects(deviceIndex);
+           return FALSE;
+       }
    }
 
-   if (m_Xfer1 && !*m_Xfer1)
+   if (m_Xfer[deviceIndex] && !*m_Xfer[deviceIndex])
    {
       // Set number of frames per callback
-      m_Xfer1->GetPair(0)->SetFramesPerCallback(m_nFramesPerCallback);
+      m_Xfer[deviceIndex]->GetPair(0)->SetFramesPerCallback(m_nFramesPerCallback);
 
       // If there is a large number of buffers, temporarily boost the command timeout value,
       // since the call to Create may take a long time to complete.
       // As a safe rule of thumb, use 100 milliseconds per buffer.
       int oldCommandTimeout = SapManager::GetCommandTimeout();
-      int newCommandTimeout = 100 * m_Buffers1->GetCount();
+      int newCommandTimeout = 100 * m_Buffers[deviceIndex]->GetCount();
 
       if (newCommandTimeout < oldCommandTimeout)
          newCommandTimeout = oldCommandTimeout;
@@ -389,20 +400,20 @@ BOOL CGigEMetaDataDemoDlg::CreateObjects(bool createAcqDevice)
       SapManager::SetCommandTimeout(newCommandTimeout);
 
       // Create transfer object
-      if (!m_Xfer1->Create())
+      if (!m_Xfer[deviceIndex]->Create())
       {
-         DestroyObjects();
+         DestroyObjects(deviceIndex);
          return FALSE;
       }
 
       // Restore original command timeout value
       SapManager::SetCommandTimeout(oldCommandTimeout);
 
-      m_Xfer1->Init(TRUE); // initialize tranfer object and reset source/destination index
+      m_Xfer[deviceIndex]->Init(TRUE); // initialize tranfer object and reset source/destination index
 
       // Retrieve number of frames per callback
       // It may be less than what we have asked for.
-      nFramesPerCallback = m_Xfer1->GetPair(0)->GetFramesPerCallback();
+      nFramesPerCallback = m_Xfer[deviceIndex]->GetPair(0)->GetFramesPerCallback();
       if (m_nFramesPerCallback > nFramesPerCallback)
       {
          m_nFramesPerCallback = nFramesPerCallback;
@@ -411,51 +422,55 @@ BOOL CGigEMetaDataDemoDlg::CreateObjects(bool createAcqDevice)
    }
 
    // Show type of metadata in title bar
-   m_appTitle = m_originalAppTitle;
-   m_metadataType = m_Metadata1->GetMetadataType();
-   switch (m_metadataType)
-   {
-   case SapMetadata::MetadataPerFrame:
-      m_appTitle += " (Per-Frame Metadata)";
-      break;
-   case SapMetadata::MetadataPerLine:
-      m_appTitle += " (Per-Line Metadata)";
-      m_ImageWnd1.EnableMarker();
-      SetDlgItemText(IDC_STATIC_METADATA_LIST_HEADER, _T("Metadata of the displayed buffer and marker"));
-      break;
-   default:
-      m_appTitle += " -- Acquisition device doesn't support Metadata";
-      break;
+   if (deviceIndex == 0) {
+       str.Format(_T("Build view 2"));
+       if (debug) MessageBox(str);
+       m_appTitle = m_originalAppTitle;
+       m_metadataType = m_Metadata[deviceIndex]->GetMetadataType();
+       switch (m_metadataType)
+       {
+       case SapMetadata::MetadataPerFrame:
+           m_appTitle += " (Per-Frame Metadata)";
+           break;
+       case SapMetadata::MetadataPerLine:
+           m_appTitle += " (Per-Line Metadata)";
+           m_ImageWnd1.EnableMarker();
+           SetDlgItemText(IDC_STATIC_METADATA_LIST_HEADER, _T("Metadata of the displayed buffer and marker"));
+           break;
+       default:
+           m_appTitle += " -- Acquisition device doesn't support Metadata";
+           break;
+       }
+       SetWindowText(m_appTitle);
+
+       ReadCameraTimestamp();
+
+       if (m_XferDisconnectDuringSetup)
+           m_Xfer[deviceIndex]->Disconnect();
+
+       // Feed the list of selectors
+       m_checklistMetadata.ResetContent();
+       UINT selectorCount = m_Metadata[deviceIndex]->GetSelectorCount();
+       char selectorName[MAX_PATH] = { 0 };
+       for (UINT selectorIndex = 0; selectorIndex < selectorCount; selectorIndex++)
+       {
+           if (m_Metadata[deviceIndex]->GetSelectorName(selectorIndex, selectorName, MAX_PATH))
+           {
+               int pos = m_checklistMetadata.AddString(CString(selectorName));
+               m_checklistMetadata.SetItemData(pos, selectorIndex);
+               m_checklistMetadata.SetCheck(pos, m_Metadata[deviceIndex]->IsSelected(selectorIndex) ? BST_CHECKED : BST_UNCHECKED);
+           }
+       }
+
+       if (m_XferDisconnectDuringSetup)
+           m_Xfer[deviceIndex]->Connect();
+
+       // Clear extracted chunks in their display listboxes
+       m_listMetadataView.ResetContent();
+       m_listMetadataView2.ResetContent();
+
+       UpdateMenu();
    }
-   SetWindowText(m_appTitle);
-
-   ReadCameraTimestamp();
-
-   if (m_XferDisconnectDuringSetup)
-      m_Xfer1->Disconnect();
-
-   // Feed the list of selectors
-   m_checklistMetadata.ResetContent();
-   UINT selectorCount = m_Metadata1->GetSelectorCount();
-   char selectorName[MAX_PATH] = { 0 };
-   for (UINT selectorIndex = 0; selectorIndex < selectorCount; selectorIndex++)
-   {
-      if (m_Metadata1->GetSelectorName(selectorIndex, selectorName, MAX_PATH))
-      {
-         int pos = m_checklistMetadata.AddString(CString(selectorName));
-         m_checklistMetadata.SetItemData(pos, selectorIndex);
-         m_checklistMetadata.SetCheck(pos, m_Metadata1->IsSelected(selectorIndex) ? BST_CHECKED : BST_UNCHECKED);
-      }
-   }
-
-   if (m_XferDisconnectDuringSetup)
-      m_Xfer1->Connect();
-
-   // Clear extracted chunks in their display listboxes
-   m_listMetadataView.ResetContent();
-   m_listMetadataView2.ResetContent();
-
-   UpdateMenu();
 
    return TRUE;
 }
@@ -465,15 +480,15 @@ BOOL CGigEMetaDataDemoDlg::CreateObjects(bool createAcqDevice)
 // Purpose   : Destroy sapera objects.
 // Parameters: None
 //==============================================================================
-BOOL CGigEMetaDataDemoDlg::DestroyObjects(bool destroyAcqDevice)
+BOOL CGigEMetaDataDemoDlg::DestroyObjects(int deviceIndex, bool destroyAcqDevice)
 {
    // Destroy transfer object
-   if (m_Xfer1 && *m_Xfer1)
-      m_Xfer1->Destroy();
+   if (m_Xfer[deviceIndex] && *m_Xfer[deviceIndex])
+      m_Xfer[deviceIndex]->Destroy();
 
    // Destroy view object
-   if (m_View1 && *m_View1)
-      m_View1->Destroy();
+   if (m_View[deviceIndex] && *m_View[deviceIndex])
+      m_View[deviceIndex]->Destroy();
 
    // Destroy buffer object
    if (m_BufferIsValid != NULL)
@@ -482,20 +497,20 @@ BOOL CGigEMetaDataDemoDlg::DestroyObjects(bool destroyAcqDevice)
       m_BufferIsValid = NULL;
    }
 
-   if (m_Buffers1 && *m_Buffers1)
-      m_Buffers1->Destroy();
+   if (m_Buffers[deviceIndex] && *m_Buffers[deviceIndex])
+      m_Buffers[deviceIndex]->Destroy();
 
    // Destroy metadata object
-   if (m_Metadata1 && *m_Metadata1)
-      m_Metadata1->Destroy();
+   if (m_Metadata[deviceIndex] && *m_Metadata[deviceIndex])
+      m_Metadata[deviceIndex]->Destroy();
 
    // Destroy feature object
-   if (m_Feature1 && *m_Feature1)
-      m_Feature1->Destroy();
+   if (m_Feature[deviceIndex] && *m_Feature[deviceIndex])
+      m_Feature[deviceIndex]->Destroy();
 
    // Destroy acquisition object
-   if (destroyAcqDevice && m_AcqDevice[0] && *m_AcqDevice[0])
-      m_AcqDevice[0]->Destroy();
+   if (destroyAcqDevice && m_AcqDevice[deviceIndex] && *m_AcqDevice[deviceIndex])
+      m_AcqDevice[deviceIndex]->Destroy();
 
    return TRUE;
 }
@@ -509,7 +524,7 @@ void CGigEMetaDataDemoDlg::OnBnClickedSaveMetadata()
    {
       CStringA pathName = (CStringA)fileDlg.GetPathName();
       CWaitCursor cur;
-      if (m_Metadata1->SaveToCSV(pathName))
+      if (m_Metadata[0]->SaveToCSV(pathName))
          MessageBox(_T("The metadata has been succesfully saved to the file"), _T("We are done"), MB_ICONINFORMATION);
       else
          MessageBox(_T("Failed to save the metadata to the file"), _T("Failed to save"), MB_ICONERROR);
@@ -519,22 +534,22 @@ void CGigEMetaDataDemoDlg::OnBnClickedSaveMetadata()
 void CGigEMetaDataDemoDlg::OnBnClickedMetadataActiveMode()
 {
    if (m_XferDisconnectDuringSetup)
-      m_Xfer1->Disconnect();
+      m_Xfer[0]->Disconnect();
 
-   m_Metadata1->Enable(m_checkEnable.GetCheck() == BST_CHECKED);
+   m_Metadata[0]->Enable(m_checkEnable.GetCheck() == BST_CHECKED);
 
    // Check if metadata selectors can be enabled through application code
    m_IsSelectAvailable = FALSE;
    char* featurename = m_IsAreaScan ? "ChunkEnable" : "endOfLineMetadataContentActivationMode";
-   if (m_AcqDevice[0]->GetFeatureInfo(featurename, m_Feature1))
+   if (m_AcqDevice[0]->GetFeatureInfo(featurename, m_Feature[0]))
    {
       SapFeature::AccessMode accessMode;
-      if (m_Feature1->GetAccessMode(&accessMode))
+      if (m_Feature[0]->GetAccessMode(&accessMode))
          m_IsSelectAvailable = (accessMode == SapFeature::AccessRW);
    }
 
    if (m_XferDisconnectDuringSetup)
-      m_Xfer1->Connect();
+      m_Xfer[0]->Connect();
 
    UpdateMenu();
 }
@@ -545,13 +560,13 @@ void CGigEMetaDataDemoDlg::OnClBnChkChangeCheckListMetadata()
    BOOL itemIndexChecked = (m_checklistMetadata.GetCheck(itemIndex) != 0);
 
    // Update selected item's checkbox
-   m_Metadata1->Select(itemIndex, itemIndexChecked);
+   m_Metadata[0]->Select(itemIndex, itemIndexChecked);
 
    // Update all items checkboxes, in case another one changed because of the itemIndex one
-   UINT selectorCount = m_Metadata1->GetSelectorCount();
+   UINT selectorCount = m_Metadata[0]->GetSelectorCount();
    for (UINT selectorIndex = 0; selectorIndex < selectorCount; selectorIndex++)
    {
-      BOOL bIsSelected = m_Metadata1->IsSelected(selectorIndex);
+      BOOL bIsSelected = m_Metadata[0]->IsSelected(selectorIndex);
       m_checklistMetadata.SetCheck(selectorIndex, bIsSelected ? BST_CHECKED : BST_UNCHECKED);
    }
 }
@@ -561,33 +576,33 @@ void CGigEMetaDataDemoDlg::UpdateMetadataList()
    m_listMetadataView.ResetContent();
    m_listMetadataView2.ResetContent();
 
-   if (!m_Metadata1->IsEnabled())
+   if (!m_Metadata[0]->IsEnabled())
       return;
 
-   if (!m_BufferIsValid[m_Buffers1->GetIndex()])
+   if (!m_BufferIsValid[m_Buffers[0]->GetIndex()])
       return;
 
    BOOL bExtractStatus = FALSE;
 
    if (m_metadataType == SapMetadata::MetadataPerFrame)
-      bExtractStatus = m_Metadata1->Extract(m_Buffers1->GetIndex());
+      bExtractStatus = m_Metadata[0]->Extract(m_Buffers[0]->GetIndex());
    else if (m_metadataType == SapMetadata::MetadataPerLine)
    {
       uint markerLine = m_ImageWnd1.GetMarkerLine();
-      bExtractStatus = m_Metadata1->Extract(m_Buffers1->GetIndex(), markerLine);
+      bExtractStatus = m_Metadata[0]->Extract(m_Buffers[0]->GetIndex(), markerLine);
    }
    else
       return;
 
    if (bExtractStatus)
    {
-      UINT resultCount = m_Metadata1->GetExtractedResultCount();
+      UINT resultCount = m_Metadata[0]->GetExtractedResultCount();
 
       for (UINT resultIndex = 0; resultIndex < resultCount; resultIndex++)
       {
          char sResultName[MAX_PATH] = { 0 };
          char sResultValue[MAX_PATH] = { 0 };
-         if (m_Metadata1->GetExtractedResult(resultIndex, sResultName, MAX_PATH, sResultValue, MAX_PATH))
+         if (m_Metadata[0]->GetExtractedResult(resultIndex, sResultName, MAX_PATH, sResultValue, MAX_PATH))
          {
             m_listMetadataView.AddString(CString(sResultName));
             m_listMetadataView2.AddString(CString(sResultValue));
@@ -668,16 +683,19 @@ void CGigEMetaDataDemoDlg::OnDestroy(void)
 {
    CDialog::OnDestroy();
 
-   // Destroy all objects
-   DestroyObjects();
+   serverCount = SapManager::GetServerCount(SapManager::ResourceAcqDevice); //Only count cameras
+   for (int serverIndex = 0; serverIndex < serverCount; serverIndex++) {
+       // Destroy all objects
+       DestroyObjects(serverIndex);
 
-   // Delete all objects
-   if (m_View1)			delete m_View1;
-   if (m_Xfer1)			delete m_Xfer1;
-   if (m_Buffers1)		delete m_Buffers1;
-   if (m_Metadata1)   delete m_Metadata1;
-   if (m_Feature1)	   delete m_Feature1;
-   if (m_AcqDevice[0])	delete m_AcqDevice[0];
+       // Delete all objects
+       if (m_View[serverIndex])			delete m_View[serverIndex];
+       if (m_Xfer[serverIndex])			delete m_Xfer[serverIndex];
+       if (m_Buffers[serverIndex])		delete m_Buffers[serverIndex];
+       if (m_Metadata[serverIndex])   delete m_Metadata[serverIndex];
+       if (m_Feature[serverIndex])	   delete m_Feature[serverIndex];
+       if (m_AcqDevice[serverIndex])	delete m_AcqDevice[serverIndex];
+   }
 }
 
 //==============================================================================
@@ -732,7 +750,7 @@ void CGigEMetaDataDemoDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrol
       UpdateData(TRUE);
 
       // Update buffer index
-      m_Buffers1->SetIndex(m_Slider);
+      m_Buffers[0]->SetIndex(m_Slider);
 
       // Refresh controls
       OnUpdateControls(0, 0);
@@ -740,7 +758,7 @@ void CGigEMetaDataDemoDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrol
       UpdateMetadataList();
 
       // Resfresh display
-      m_View1->Show();
+      m_View[0]->Show();
    }
 
    CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
@@ -772,7 +790,7 @@ BOOL CGigEMetaDataDemoDlg::OnQueryEndSession()
 void CGigEMetaDataDemoDlg::OnKillfocusBufferFrameRate(void)
 {
    UpdateData(TRUE);
-   m_Buffers1->SetFrameRate(m_BufferFrameRate);
+   m_Buffers[0]->SetFrameRate(m_BufferFrameRate);
 }
 
 //==============================================================================
@@ -783,7 +801,7 @@ void CGigEMetaDataDemoDlg::OnKillfocusBufferFrameRate(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::UpdateMenu(void)
 {
-   BOOL bAcqNoGrab = m_Xfer1 && *m_Xfer1 && !m_bRecordOn && !m_bPlayOn;
+   BOOL bAcqNoGrab = m_Xfer[0] && *m_Xfer[0] && !m_bRecordOn && !m_bPlayOn;
    BOOL bNoGrab = !m_bRecordOn && !m_bPlayOn;
 
    // Record Control
@@ -796,15 +814,15 @@ void CGigEMetaDataDemoDlg::UpdateMenu(void)
 
    // General Options
    GetDlgItem(IDC_BUFFER_OPTIONS)->EnableWindow(bNoGrab);
-   GetDlgItem(IDC_LOAD_CAM_VIC)->EnableWindow(m_Xfer1 && bNoGrab);
-   GetDlgItem(IDC_HIGH_FRAME_RATE)->EnableWindow(m_Xfer1 && bNoGrab);
+   GetDlgItem(IDC_LOAD_CAM_VIC)->EnableWindow(m_Xfer[0] && bNoGrab);
+   GetDlgItem(IDC_HIGH_FRAME_RATE)->EnableWindow(m_Xfer[0] && bNoGrab);
 
    // File Options
    GetDlgItem(IDC_FILE_LOAD)->EnableWindow(bNoGrab);
    GetDlgItem(IDC_FILE_SAVE)->EnableWindow(bNoGrab);
 
    // Metadata controls
-   BOOL bIsMetadataEnabled = m_Metadata1->IsEnabled();
+   BOOL bIsMetadataEnabled = m_Metadata[0]->IsEnabled();
 
    m_checkEnable.SetCheck(bIsMetadataEnabled ? BST_CHECKED : BST_UNCHECKED);
    m_checkEnable.EnableWindow(bAcqNoGrab);
@@ -819,7 +837,7 @@ void CGigEMetaDataDemoDlg::UpdateMenu(void)
 
    // Slider
    m_SliderCtrl.EnableWindow(bNoGrab || (m_bPlayOn && m_bPauseOn));
-   m_SliderCtrl.SetRange(0, m_Buffers1->GetCount() - 1, TRUE);
+   m_SliderCtrl.SetRange(0, m_Buffers[0]->GetCount() - 1, TRUE);
 
    // If last control was disabled, set default focus
    if (!GetFocus())
@@ -836,9 +854,9 @@ void CGigEMetaDataDemoDlg::UpdateMenu(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::UpdateFrameRate(void)
 {
-   if (m_Xfer1->UpdateFrameRateStatistics())
+   if (m_Xfer[0]->UpdateFrameRateStatistics())
    {
-      SapXferFrameRateInfo* pStats = m_Xfer1->GetFrameRateStatistics();
+      SapXferFrameRateInfo* pStats = m_Xfer[0]->GetFrameRateStatistics();
 
       if (pStats->IsLiveFrameRateAvailable() && !pStats->IsLiveFrameRateStalled())
       {
@@ -856,9 +874,9 @@ void CGigEMetaDataDemoDlg::UpdateFrameRate(void)
       m_MaxTime = pStats->GetMaxTimePerFrame();
 
       if (pStats->IsBufferFrameRateAvailable())
-         m_Buffers1->SetFrameRate(m_BufferFrameRate);
+         m_Buffers[0]->SetFrameRate(m_BufferFrameRate);
       else
-         m_Buffers1->SetFrameRate(pStats->GetLiveFrameRate());
+         m_Buffers[0]->SetFrameRate(pStats->GetLiveFrameRate());
    }
 }
 
@@ -870,7 +888,7 @@ void CGigEMetaDataDemoDlg::UpdateFrameRate(void)
 void CGigEMetaDataDemoDlg::CheckForLastFrame(void)
 {
    // Check for last frame
-   if (m_Buffers1->GetIndex() == m_Buffers1->GetCount() - 1)
+   if (m_Buffers[0]->GetIndex() == m_Buffers[0]->GetCount() - 1)
    {
       if (m_bRecordOn)
       {
@@ -900,7 +918,7 @@ void CGigEMetaDataDemoDlg::OnTimer(UINT_PTR nIDEvent)
    if (nIDEvent == 1)
    {
       // Increase buffer index
-      m_Buffers1->Next();
+      m_Buffers[0]->Next();
 
       // Calculate the normal frame count in the interval
       clock_t curClock = clock();
@@ -910,11 +928,11 @@ void CGigEMetaDataDemoDlg::OnTimer(UINT_PTR nIDEvent)
 
       // Skip some frame if we lose some time since last been here (or since OnBnClickedPlay)
       int i;
-      for (i = 1; (i < normalFrameCountInInterval) && (m_Buffers1->GetIndex() < m_Buffers1->GetCount() - 1); i++)
-         m_Buffers1->Next();
+      for (i = 1; (i < normalFrameCountInInterval) && (m_Buffers[0]->GetIndex() < m_Buffers[0]->GetCount() - 1); i++)
+         m_Buffers[0]->Next();
 
       // Resfresh display
-      m_View1->Show();
+      m_View[0]->Show();
 
       // Check if last frame is reached
       CheckForLastFrame();
@@ -933,24 +951,24 @@ void CGigEMetaDataDemoDlg::OnTimer(UINT_PTR nIDEvent)
 //==============================================================================
 LRESULT CGigEMetaDataDemoDlg::OnUpdateControls(WPARAM, LPARAM)
 {
-   if (m_Buffers1)
+   if (m_Buffers[0])
    {
       // Update edit controls
-      m_ActiveBuffer = m_Buffers1->GetIndex() + 1;
-      m_BufferCount = m_Buffers1->GetCount();
-      m_Slider = m_Buffers1->GetIndex();
+      m_ActiveBuffer = m_Buffers[0]->GetIndex() + 1;
+      m_BufferCount = m_Buffers[0]->GetCount();
+      m_Slider = m_Buffers[0]->GetIndex();
 
       BOOL bNoGrab = !m_bRecordOn && !m_bPlayOn;
       if (bNoGrab)
          m_LiveFrameRate = _T("N/A");
 
-      m_BufferFrameRate = m_Buffers1->GetFrameRate();
+      m_BufferFrameRate = m_Buffers[0]->GetFrameRate();
 
-      m_Buffers1->GetDeviceTimeStamp(&m_TimestampBuffer);
-      if (m_Buffers1->GetIndex())
+      m_Buffers[0]->GetDeviceTimeStamp(&m_TimestampBuffer);
+      if (m_Buffers[0]->GetIndex())
       {
          UINT64 timestampBufferPrevious = 0;
-         m_Buffers1->GetDeviceTimeStamp(m_Buffers1->GetIndex() - 1, &timestampBufferPrevious);
+         m_Buffers[0]->GetDeviceTimeStamp(m_Buffers[0]->GetIndex() - 1, &timestampBufferPrevious);
          m_TimestampBufferDelta = m_TimestampBuffer - timestampBufferPrevious;
       }
       else
@@ -975,19 +993,19 @@ LRESULT CGigEMetaDataDemoDlg::OnUpdateControls(WPARAM, LPARAM)
 void CGigEMetaDataDemoDlg::OnBnClickedRecord(void)
 {
    // Reset source and destination indices
-   m_Xfer1->Init();
+   m_Xfer[0]->Init();
 
    // Reset the frame rate statistics ahead of each transfer stream
-   SapXferFrameRateInfo* pStats = m_Xfer1->GetFrameRateStatistics();
+   SapXferFrameRateInfo* pStats = m_Xfer[0]->GetFrameRateStatistics();
    pStats->Reset();
 
    // Make all buffers valid for metadata (may be set as invalid in transfer callback)
-   int bufCount = m_Buffers1->GetCount();
+   int bufCount = m_Buffers[0]->GetCount();
    for (int bufIndex = 0; bufIndex < bufCount; bufIndex++)
       m_BufferIsValid[bufIndex] = TRUE;
 
    // Acquire all frames
-   if (m_Xfer1->Snap(m_Buffers1->GetCount()))
+   if (m_Xfer[0]->Snap(m_Buffers[0]->GetCount()))
    {
       m_bRecordOn = TRUE;
       UpdateMenu();
@@ -1001,11 +1019,11 @@ void CGigEMetaDataDemoDlg::OnBnClickedRecord(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedPlay(void)
 {
-   m_Buffers1->SetIndex(0); // Initialize buffer index
+   m_Buffers[0]->SetIndex(0); // Initialize buffer index
 
    // Start playback timer
    m_PlayLastClock = clock();
-   int frameTime = max(1, (int)(1000.0 / m_Buffers1->GetFrameRate()));
+   int frameTime = max(1, (int)(1000.0 / m_Buffers[0]->GetFrameRate()));
    SetTimer(1, frameTime, NULL);
 
    m_bPlayOn = TRUE;
@@ -1026,11 +1044,11 @@ void CGigEMetaDataDemoDlg::OnBnClickedPause(void)
       {
          KillTimer(1);
          // Stop current acquisition
-         if (!m_Xfer1->Freeze())
+         if (!m_Xfer[0]->Freeze())
             return;
 
-         if (CAbortDlg(this, m_Xfer1).DoModal() != IDOK)
-            m_Xfer1->Abort();
+         if (CAbortDlg(this, m_Xfer[0]).DoModal() != IDOK)
+            m_Xfer[0]->Abort();
       }
       else if (m_bPlayOn)
          KillTimer(1); // Stop playback timer
@@ -1040,16 +1058,16 @@ void CGigEMetaDataDemoDlg::OnBnClickedPause(void)
       // Check if recording or playing
       if (m_bRecordOn)
       {
-         int frameTime = max(1, (int)(1000.0 / m_Buffers1->GetFrameRate()));
+         int frameTime = max(1, (int)(1000.0 / m_Buffers[0]->GetFrameRate()));
          SetTimer(1, frameTime, NULL);
          // Acquire remaining frames
-         if (!m_Xfer1->Snap(m_Buffers1->GetCount() - m_Buffers1->GetIndex() - 1))
+         if (!m_Xfer[0]->Snap(m_Buffers[0]->GetCount() - m_Buffers[0]->GetIndex() - 1))
             return;
       }
       else if (m_bPlayOn)
       {
          // Restart playback timer
-         int frameTime = (int)(1000.0 / m_Buffers1->GetFrameRate());
+         int frameTime = (int)(1000.0 / m_Buffers[0]->GetFrameRate());
          SetTimer(1, frameTime, NULL);
       }
    }
@@ -1069,11 +1087,11 @@ void CGigEMetaDataDemoDlg::OnBnClickedStop(void)
    if (m_bRecordOn)
    {
       // Stop current acquisition
-      if (!m_Xfer1->Freeze())
+      if (!m_Xfer[0]->Freeze())
          return;
 
-      if (CAbortDlg(this, m_Xfer1).DoModal() != IDOK)
-         m_Xfer1->Abort();
+      if (CAbortDlg(this, m_Xfer[0]).DoModal() != IDOK)
+         m_Xfer[0]->Abort();
 
       m_bRecordOn = FALSE;
    }
@@ -1101,7 +1119,7 @@ void CGigEMetaDataDemoDlg::OnBnClickedStop(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedBufferOptions(void)
 {
-   CBufDlg dlg(this, m_Buffers1, m_View1->GetDisplay());
+   CBufDlg dlg(this, m_Buffers[0], m_View[0]->GetDisplay());
    if (dlg.DoModal() == IDOK)
    {
       CWaitCursor cur;
@@ -1110,13 +1128,13 @@ void CGigEMetaDataDemoDlg::OnBnClickedBufferOptions(void)
       DestroyObjects(false);
 
       // Update buffer object
-      SapBuffer buf = *m_Buffers1;
-      *m_Buffers1 = dlg.GetBuffer();
+      SapBuffer buf = *m_Buffers[0];
+      *m_Buffers[0] = dlg.GetBuffer();
 
       // Recreate objects
       if (!CreateObjects(false))
       {
-         *m_Buffers1 = buf;
+         *m_Buffers[0] = buf;
          CreateObjects(false);
       }
 
@@ -1142,25 +1160,28 @@ void CGigEMetaDataDemoDlg::OnBnClickedLoadAcqConfig(void)
    CAcqConfigDlg dlg(this, CAcqConfigDlg::ServerAcqDevice);
    if (dlg.DoModal() == IDOK)
    {
-      // Destroy objects
-      DestroyObjects();
+      serverCount = SapManager::GetServerCount(SapManager::ResourceAcqDevice); //Only count cameras
+      for (int serverIndex = 0; serverIndex < serverCount; serverIndex++) {
+          // Destroy objects
+          DestroyObjects(serverIndex);
 
-      // Backup
-      SapLocation loc = m_AcqDevice[0]->GetLocation();
-      const char* configFile = m_AcqDevice[0]->GetConfigFile();
+          // Backup
+          SapLocation loc = m_AcqDevice[serverIndex]->GetLocation();
+          const char* configFile = m_AcqDevice[serverIndex]->GetConfigFile();
 
-      // Update object
-      m_AcqDevice[0]->SetLocation(dlg.GetLocation());
-      m_AcqDevice[0]->SetConfigFile(dlg.GetConfigFile());
-      m_Feature1->SetLocation(dlg.GetLocation());
+          // Update object
+          m_AcqDevice[serverIndex]->SetLocation(dlg.GetLocation());
+          m_AcqDevice[serverIndex]->SetConfigFile(dlg.GetConfigFile());
+          m_Feature[serverIndex]->SetLocation(dlg.GetLocation());
 
-      // Recreate objects
-      if (!CreateObjects())
-      {
-         m_AcqDevice[0]->SetLocation(loc);
-         m_AcqDevice[0]->SetConfigFile(configFile);
-         m_Feature1->SetLocation(loc);
-         CreateObjects();
+          // Recreate objects
+          if (!CreateObjects(serverIndex))
+          {
+              m_AcqDevice[serverIndex]->SetLocation(loc);
+              m_AcqDevice[serverIndex]->SetConfigFile(configFile);
+              m_Feature[serverIndex]->SetLocation(loc);
+              CreateObjects(serverIndex);
+          }
       }
 
       ReadCameraTimestamp();
@@ -1185,19 +1206,19 @@ void CGigEMetaDataDemoDlg::OnBnClickedLoadAcqConfig(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedFileLoad(void)
 {
-   if (m_Buffers1->GetFormat() == SapFormatMono16)
+   if (m_Buffers[0]->GetFormat() == SapFormatMono16)
    {
       MessageBox(_T("Sequence images in AVI format are sampled at 8-bit pixel depth.\nYou cannot load a sequence in the current configuration."));
       return;
    }
 
-   if (m_Buffers1->GetFormat() == SapFormatRGBR888)
+   if (m_Buffers[0]->GetFormat() == SapFormatRGBR888)
    {
       MessageBox(_T("Sequence images acquired in RGBR888 format (red first) were saved as RGB888 (blue first).\nYou cannot load a sequence in the current configuration."));
       return;
    }
 
-   CLoadSaveDlg dlg(this, m_Buffers1, TRUE, TRUE);
+   CLoadSaveDlg dlg(this, m_Buffers[0], TRUE, TRUE);
    if (dlg.DoModal() == IDOK)
    {
       InvalidateRect(NULL);
@@ -1213,13 +1234,13 @@ void CGigEMetaDataDemoDlg::OnBnClickedFileLoad(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedFileSave(void)
 {
-   if (m_Buffers1->GetFormat() == SapFormatMono16)
+   if (m_Buffers[0]->GetFormat() == SapFormatMono16)
       MessageBox(_T("Saving images in AVI format requires downsampling them to 8-bit pixel depth.\nYou will not be able to reload this sequence in this application unless you change the buffer format."));
 
-   if (m_Buffers1->GetFormat() == SapFormatRGBR888)
+   if (m_Buffers[0]->GetFormat() == SapFormatRGBR888)
       MessageBox(_T("Saving images in AVI format requires conversion to RGB888 format (blue first).\nYou will not be able to reload this sequence in this application unless you change the buffer format."));
 
-   CLoadSaveDlg dlg(this, m_Buffers1, FALSE, TRUE);
+   CLoadSaveDlg dlg(this, m_Buffers[0], FALSE, TRUE);
    dlg.DoModal();
 }
 
@@ -1230,7 +1251,7 @@ void CGigEMetaDataDemoDlg::OnBnClickedFileSave(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedFileLoadCurrent(void)
 {
-   CLoadSaveDlg dlg(this, m_Buffers1, TRUE, FALSE);
+   CLoadSaveDlg dlg(this, m_Buffers[0], TRUE, FALSE);
    if (dlg.DoModal() == IDOK)
    {
       InvalidateRect(NULL);
@@ -1246,7 +1267,7 @@ void CGigEMetaDataDemoDlg::OnBnClickedFileLoadCurrent(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedFileSaveCurrent(void)
 {
-   CLoadSaveDlg dlg(this, m_Buffers1, FALSE, FALSE);
+   CLoadSaveDlg dlg(this, m_Buffers[0], FALSE, FALSE);
    dlg.DoModal();
 }
 
@@ -1261,18 +1282,21 @@ void CGigEMetaDataDemoDlg::OnBnClickedFileSaveCurrent(void)
 
 void CGigEMetaDataDemoDlg::OnBnClickedHighFrameRate()
 {
-   CHighFrameRateDlg dlg(this, m_nFramesPerCallback, m_Xfer1);
+    serverCount = SapManager::GetServerCount(SapManager::ResourceAcqDevice); //Only count cameras
+    for (int serverIndex = 0; serverIndex < serverCount; serverIndex++) {
+        CHighFrameRateDlg dlg(this, m_nFramesPerCallback, m_Xfer[serverIndex]);
 
-   if (dlg.DoModal() == IDOK)
-   {
-      CWaitCursor cursor;
+        if (dlg.DoModal() == IDOK)
+        {
+            CWaitCursor cursor;
 
-      m_nFramesPerCallback = dlg.GetNFramesPerCallback();
+            m_nFramesPerCallback = dlg.GetNFramesPerCallback();
 
-      m_Xfer1->Destroy();
+            m_Xfer[serverIndex]->Destroy();
 
-      CreateObjects();
-   }
+            CreateObjects(serverIndex);
+        }
+    }
 }
 
 //==============================================================================
