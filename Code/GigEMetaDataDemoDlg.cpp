@@ -11,7 +11,7 @@
 #include "GigEMetaDataDemoAbout.h"
 #include "float.h"
 
-#define debug true
+#define debug false
 
 //==============================================================================
 // Name      : CGigEMetaDataDemoDlg::CGigEMetaDataDemoDlg
@@ -30,12 +30,13 @@ CGigEMetaDataDemoDlg::CGigEMetaDataDemoDlg(CWnd* pParent)
    m_ActiveBuffer = 0;
    m_BufferCount = 0;
    m_Slider = 0;
-   serverSelection = 0;
+   selectedServer = 0;
+   serverIndex = 0;
    //}}AFX_DATA_INIT
 
    // Note that LoadIcon does not require a subsequent DestroyIcon in Win32
    m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-   int serverCount = SapManager::GetServerCount(SapManager::ResourceAcqDevice); //Only count cameras
+   serverCount = SapManager::GetServerCount(SapManager::ResourceAcqDevice); //Only count cameras
    CString str;
    str.Format(_T("Cameras Found: %d"), serverCount);
    if(debug) MessageBox(str);
@@ -149,12 +150,14 @@ END_MESSAGE_MAP()
 //==============================================================================
 void CGigEMetaDataDemoDlg::XferCallback(SapXferCallbackInfo* pInfo)
 {
-   CGigEMetaDataDemoDlg* pDlg = (CGigEMetaDataDemoDlg*)pInfo->GetContext();
-
+    static int counter = 0;
+    counter++;
+    int index = 0;
+    CGigEMetaDataDemoDlg* pDlg = (CGigEMetaDataDemoDlg*)pInfo->GetContext();
    SapBuffer::State bufState = SapBuffer::StateEmpty;
-   int bufIndex = pDlg->m_Buffers[0]->GetIndex();
 
-   pDlg->m_Buffers[0]->GetState(bufIndex, &bufState);
+   int bufIndex = pDlg->m_Buffers[index]->GetIndex();
+   pDlg->m_Buffers[index]->GetState(bufIndex, &bufState);
    pDlg->m_BufferIsValid[bufIndex] = (bufState == SapBuffer::StateFull);
 
    // Measure real frame time
@@ -164,7 +167,7 @@ void CGigEMetaDataDemoDlg::XferCallback(SapXferCallbackInfo* pInfo)
    pDlg->CheckForLastFrame();
 
    // Refresh view
-   pDlg->m_View[0]->Show();
+   if(index == 0) pDlg->m_View[0]->Show();
 
    // Refresh controls
    pDlg->PostMessage(WM_UPDATE_CONTROLS, 0, 0);
@@ -251,11 +254,11 @@ BOOL CGigEMetaDataDemoDlg::OnInitDialog(void)
    CString str;
    SapLocation location;
    int resourceIndex = dlg.GetLocation().GetResourceIndex(); //Get index of resource (normally 0)
-   serverSelection = dlg.GetLocation().GetServerIndex(); //Get selected camera index
-   str.Format(_T("Resource #%d, Selection #%d"), resourceIndex, serverSelection);
+   selectedServer = dlg.GetLocation().GetServerIndex(); //Get selected camera index
+   str.Format(_T("Resource #%d, Selection #%d"), resourceIndex, selectedServer);
    if (debug) MessageBox(str);
    char serverName[CORSERVER_MAX_STRLEN];
-   for (int serverIndex = 0; serverIndex < serverCount; serverIndex++) {
+   for (serverIndex = 0; serverIndex < serverCount; serverIndex++) {
        SapManager::GetServerName(serverIndex+1, serverName, sizeof(serverName)); //Get Server name
        location = SapLocation(CStringA(serverName), resourceIndex);
        str.Format(_T("Initializing device #%d - %s"), serverIndex, CString(serverName));
@@ -268,9 +271,9 @@ BOOL CGigEMetaDataDemoDlg::OnInitDialog(void)
    }
 
    // Attach sapview to image viewer to the selected camera
-   str.Format(_T("Attach view to %d"), serverSelection);
+   str.Format(_T("Attach view to %d"), selectedServer);
    if (debug) MessageBox(str);
-   m_View[0] = new SapView(m_Buffers[serverSelection-1]);
+   m_View[0] = new SapView(m_Buffers[selectedServer-1]);
    m_ImageWnd1.AttachSapView(m_View[0]);
 
    // Create all objects
@@ -902,6 +905,19 @@ void CGigEMetaDataDemoDlg::CheckForLastFrame(void)
          KillTimer(1);
       }
 
+      CString str = "Buffer test\n";
+      CString tempStr = "Buffer test\n";
+      uint8_t pixel = 0;
+      for (int i = 0; i < 5; i++) {
+          for (int j = 0; j < 3; j++) {
+              m_Buffers[j]->ReadElement(i, 200, 200, &pixel);
+              tempStr.Format(_T("%d "), pixel);
+              str += tempStr;
+          }
+          str += "\n";
+      }
+      MessageBox(str);
+
       UpdateMenu();
 
       UpdateMetadataList();
@@ -993,24 +1009,26 @@ LRESULT CGigEMetaDataDemoDlg::OnUpdateControls(WPARAM, LPARAM)
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedRecord(void)
 {
-   // Reset source and destination indices
-   m_Xfer[0]->Init();
+    for (int deviceIndex = 0; deviceIndex < serverCount; deviceIndex++) {
+        // Reset source and destination indices
+        m_Xfer[deviceIndex]->Init();
 
-   // Reset the frame rate statistics ahead of each transfer stream
-   SapXferFrameRateInfo* pStats = m_Xfer[0]->GetFrameRateStatistics();
-   pStats->Reset();
+        // Reset the frame rate statistics ahead of each transfer stream
+        SapXferFrameRateInfo* pStats = m_Xfer[deviceIndex]->GetFrameRateStatistics();
+        pStats->Reset();
 
-   // Make all buffers valid for metadata (may be set as invalid in transfer callback)
-   int bufCount = m_Buffers[0]->GetCount();
-   for (int bufIndex = 0; bufIndex < bufCount; bufIndex++)
-      m_BufferIsValid[bufIndex] = TRUE;
+        // Make all buffers valid for metadata (may be set as invalid in transfer callback)
+        int bufCount = m_Buffers[deviceIndex]->GetCount();
+        for (int bufIndex = 0; bufIndex < bufCount; bufIndex++)
+            m_BufferIsValid[bufIndex] = TRUE;
 
-   // Acquire all frames
-   if (m_Xfer[0]->Snap(m_Buffers[0]->GetCount()))
-   {
-      m_bRecordOn = TRUE;
-      UpdateMenu();
-   }
+        // Acquire all frames
+        if (m_Xfer[deviceIndex]->Snap(m_Buffers[deviceIndex]->GetCount()))
+        {
+            m_bRecordOn = TRUE;
+            UpdateMenu();
+        }
+    }
 }
 
 //==============================================================================
@@ -1020,11 +1038,11 @@ void CGigEMetaDataDemoDlg::OnBnClickedRecord(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedPlay(void)
 {
-   m_Buffers[0]->SetIndex(0); // Initialize buffer index
+    m_Buffers[selectedServer-1]->SetIndex(0); // Initialize buffer index
 
    // Start playback timer
    m_PlayLastClock = clock();
-   int frameTime = max(1, (int)(1000.0 / m_Buffers[0]->GetFrameRate()));
+   int frameTime = max(1, (int)(1000.0 / m_Buffers[selectedServer-1]->GetFrameRate()));
    SetTimer(1, frameTime, NULL);
 
    m_bPlayOn = TRUE;
