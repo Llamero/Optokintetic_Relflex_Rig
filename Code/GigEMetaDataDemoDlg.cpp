@@ -908,10 +908,10 @@ void CGigEMetaDataDemoDlg::CheckForLastFrame(void)
       CString str = "Buffer test\n";
       CString tempStr = "Buffer test\n";
       uint8_t pixel = 0;
-      for (int i = 0; i < 5; i++) {
-          for (int j = 0; j < 3; j++) {
+      for (int i = 0; i < m_Buffers[0]->GetCount(); i++) {
+          for (int j = 0; j < serverCount; j++) {
               m_Buffers[j]->ReadElement(i, 200, 200, &pixel);
-              tempStr.Format(_T("%d "), pixel);
+              tempStr.Format(_T("%d\t"), pixel);
               str += tempStr;
           }
           str += "\n";
@@ -1137,34 +1137,36 @@ void CGigEMetaDataDemoDlg::OnBnClickedStop(void)
 // Parameters: None
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedBufferOptions(void)
-{
+{   
    CBufDlg dlg(this, m_Buffers[0], m_View[0]->GetDisplay());
-   if (dlg.DoModal() == IDOK)
-   {
-      CWaitCursor cur;
+   for (int i = 0; i < serverCount; i++) {
+       if (dlg.DoModal() == IDOK)
+       {
+           CWaitCursor cur;
 
-      // Destroy objects
-      DestroyObjects(false);
+           // Destroy objects
+           DestroyObjects(i, false);
 
-      // Update buffer object
-      SapBuffer buf = *m_Buffers[0];
-      *m_Buffers[0] = dlg.GetBuffer();
+           // Update buffer object
+           SapBuffer buf = *m_Buffers[i];
+           *m_Buffers[i] = dlg.GetBuffer();
 
-      // Recreate objects
-      if (!CreateObjects(false))
-      {
-         *m_Buffers[0] = buf;
-         CreateObjects(false);
-      }
+           // Recreate objects
+           if (!CreateObjects(i, false))
+           {
+               *m_Buffers[i] = buf;
+               CreateObjects(i, false);
+           }
 
-      // empty list of metadata
-      m_listMetadataView.ResetContent();
-      m_listMetadataView2.ResetContent();
+           // empty list of metadata
+           m_listMetadataView.ResetContent();
+           m_listMetadataView2.ResetContent();
 
-      m_ImageWnd1.Reset();
-      InvalidateRect(NULL);
-      UpdateWindow();
-      UpdateMenu();
+           m_ImageWnd1.Reset();
+           InvalidateRect(NULL);
+           UpdateWindow();
+           UpdateMenu();
+       }
    }
 }
 
