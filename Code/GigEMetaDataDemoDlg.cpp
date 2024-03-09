@@ -754,7 +754,7 @@ void CGigEMetaDataDemoDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrol
       UpdateData(TRUE);
 
       // Update buffer index
-      m_Buffers[0]->SetIndex(m_Slider);
+      m_Buffers[selectedServer-1]->SetIndex(m_Slider);
 
       // Refresh controls
       OnUpdateControls(0, 0);
@@ -916,7 +916,7 @@ void CGigEMetaDataDemoDlg::CheckForLastFrame(void)
           }
           str += "\n";
       }
-      MessageBox(str);
+      if(debug) MessageBox(str);
 
       UpdateMenu();
 
@@ -935,7 +935,7 @@ void CGigEMetaDataDemoDlg::OnTimer(UINT_PTR nIDEvent)
    if (nIDEvent == 1)
    {
       // Increase buffer index
-      m_Buffers[0]->Next();
+      m_Buffers[selectedServer-1]->Next();
 
       // Calculate the normal frame count in the interval
       clock_t curClock = clock();
@@ -945,8 +945,8 @@ void CGigEMetaDataDemoDlg::OnTimer(UINT_PTR nIDEvent)
 
       // Skip some frame if we lose some time since last been here (or since OnBnClickedPlay)
       int i;
-      for (i = 1; (i < normalFrameCountInInterval) && (m_Buffers[0]->GetIndex() < m_Buffers[0]->GetCount() - 1); i++)
-         m_Buffers[0]->Next();
+      for (i = 1; (i < normalFrameCountInInterval) && (m_Buffers[selectedServer-1]->GetIndex() < m_Buffers[selectedServer-1]->GetCount() - 1); i++)
+         m_Buffers[selectedServer-1]->Next();
 
       // Resfresh display
       m_View[0]->Show();
