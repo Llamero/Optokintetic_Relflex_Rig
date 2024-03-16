@@ -10,6 +10,9 @@
 #include "GigEMetaDataDemoDlg.h"
 #include "GigEMetaDataDemoAbout.h"
 #include "float.h"
+#include "Windows.h"
+#include "thread"
+#include "chrono"
 
 #define debug false
 
@@ -30,16 +33,25 @@ CGigEMetaDataDemoDlg::CGigEMetaDataDemoDlg(CWnd* pParent)
    m_ActiveBuffer = 0;
    m_BufferCount = 0;
    m_Slider = 0;
-   selectedServer = 0;
-   serverIndex = 0;
+   selectedServer = 0; //Index of camera selected in dropdown - this will be the view camera
+   serverIndex = 0; //Counter for current camera index
+   masterServer = NULL; //Index of camera that sends trigger output, controlling all other cameras
+
+   //Timer variables
+   PCFreq = 0.0;
+   CounterStart = 0;
+
+
    //}}AFX_DATA_INIT
 
    // Note that LoadIcon does not require a subsequent DestroyIcon in Win32
    m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
    serverCount = SapManager::GetServerCount(SapManager::ResourceAcqDevice); //Only count cameras
-   CString str;
-   str.Format(_T("Cameras Found: %d"), serverCount);
-   if(debug) MessageBox(str);
+   if (debug) {
+       CString str;
+       str.Format(_T("Cameras Found: %d"), serverCount);
+       MessageBox(str);
+   }
    m_AcqDevice.resize(serverCount);
    std::vector<SapAcqDevice*> m_AcqDevice(serverCount, NULL); //https://stackoverflow.com/questions/5887615/creating-an-array-of-object-pointers-c
    m_Feature.resize(serverCount);
@@ -152,9 +164,9 @@ void CGigEMetaDataDemoDlg::XferCallback(SapXferCallbackInfo* pInfo)
 {
     static int counter = 0;
     counter++;
-    int index = 0;
     CGigEMetaDataDemoDlg* pDlg = (CGigEMetaDataDemoDlg*)pInfo->GetContext();
    SapBuffer::State bufState = SapBuffer::StateEmpty;
+   int index = pDlg->selectedServer - 1;
 
    int bufIndex = pDlg->m_Buffers[index]->GetIndex();
    pDlg->m_Buffers[index]->GetState(bufIndex, &bufState);
@@ -171,6 +183,9 @@ void CGigEMetaDataDemoDlg::XferCallback(SapXferCallbackInfo* pInfo)
 
    // Refresh controls
    pDlg->PostMessage(WM_UPDATE_CONTROLS, 0, 0);
+   if (counter % pDlg->serverCount != 0) {
+
+   }
 }
 
 #pragma region image viewer event handlers
@@ -267,7 +282,8 @@ BOOL CGigEMetaDataDemoDlg::OnInitDialog(void)
        m_Feature[serverIndex] = new SapFeature(location);
        m_Buffers[serverIndex] = new SapBufferWithTrash(MAX_BUFFER);
        m_Metadata[serverIndex] = new SapMetadata(m_AcqDevice[serverIndex], m_Buffers[serverIndex]);
-       m_Xfer[serverIndex] = new SapAcqDeviceToBuf(m_AcqDevice[serverIndex], m_Buffers[serverIndex], XferCallback, this);
+       if(true) m_Xfer[serverIndex] = new SapAcqDeviceToBuf(m_AcqDevice[serverIndex], m_Buffers[serverIndex], XferCallback, this);
+       else m_Xfer[serverIndex] = new SapAcqDeviceToBuf(m_AcqDevice[serverIndex], m_Buffers[serverIndex], NULL, this); //Dont waste time doing call back for buffers that aren't displayed
    }
 
    // Attach sapview to image viewer to the selected camera
@@ -526,36 +542,46 @@ void CGigEMetaDataDemoDlg::OnBnClickedSaveMetadata()
    CFileDialog fileDlg(FALSE, _T("csv"), _T("metadata.csv"), OFN_HIDEREADONLY | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT, _T("Metadata Files (*.csv)|*.csv||"), this);
    if (fileDlg.DoModal() == IDOK)
    {
-      CStringA pathName = (CStringA)fileDlg.GetPathName();
+      CString pathName;
+      CStringA path;
+      CString pathNameRoot = fileDlg.GetPathName();
       CWaitCursor cur;
-      if (m_Metadata[0]->SaveToCSV(pathName))
-         MessageBox(_T("The metadata has been succesfully saved to the file"), _T("We are done"), MB_ICONINFORMATION);
-      else
-         MessageBox(_T("Failed to save the metadata to the file"), _T("Failed to save"), MB_ICONERROR);
+      pathNameRoot = pathNameRoot.Left(pathNameRoot.GetLength() - 4);
+      for (int i=0; i < serverCount; i++) {
+          pathName.Format(_T("%s-%i.csv"), pathNameRoot, i+1);
+          if (m_Metadata[i]->SaveToCSV((CStringA)pathName)) {
+              if (i == serverCount - 1)
+                  MessageBox(_T("The metadata has been succesfully saved to the file"), _T("We are done"), MB_ICONINFORMATION);
+          }
+          else
+              MessageBox(_T("Failed to save the metadata to the file"), _T("Failed to save"), MB_ICONERROR);
+      }
    }
 }
 
 void CGigEMetaDataDemoDlg::OnBnClickedMetadataActiveMode()
 {
-   if (m_XferDisconnectDuringSetup)
-      m_Xfer[0]->Disconnect();
+    for (int i=0; i < serverCount; i++) {
+        if (m_XferDisconnectDuringSetup)
+            m_Xfer[i]->Disconnect();
 
-   m_Metadata[0]->Enable(m_checkEnable.GetCheck() == BST_CHECKED);
+        m_Metadata[i]->Enable(m_checkEnable.GetCheck() == BST_CHECKED);
 
-   // Check if metadata selectors can be enabled through application code
-   m_IsSelectAvailable = FALSE;
-   char* featurename = m_IsAreaScan ? "ChunkEnable" : "endOfLineMetadataContentActivationMode";
-   if (m_AcqDevice[0]->GetFeatureInfo(featurename, m_Feature[0]))
-   {
-      SapFeature::AccessMode accessMode;
-      if (m_Feature[0]->GetAccessMode(&accessMode))
-         m_IsSelectAvailable = (accessMode == SapFeature::AccessRW);
-   }
+        // Check if metadata selectors can be enabled through application code
+        m_IsSelectAvailable = FALSE;
+        char* featurename = m_IsAreaScan ? "ChunkEnable" : "endOfLineMetadataContentActivationMode";
+        if (m_AcqDevice[i]->GetFeatureInfo(featurename, m_Feature[i]))
+        {
+            SapFeature::AccessMode accessMode;
+            if (m_Feature[i]->GetAccessMode(&accessMode))
+                m_IsSelectAvailable = (accessMode == SapFeature::AccessRW);
+        }
 
-   if (m_XferDisconnectDuringSetup)
-      m_Xfer[0]->Connect();
+        if (m_XferDisconnectDuringSetup)
+            m_Xfer[i]->Connect();
 
-   UpdateMenu();
+        UpdateMenu();
+    }
 }
 
 void CGigEMetaDataDemoDlg::OnClBnChkChangeCheckListMetadata()
@@ -564,13 +590,13 @@ void CGigEMetaDataDemoDlg::OnClBnChkChangeCheckListMetadata()
    BOOL itemIndexChecked = (m_checklistMetadata.GetCheck(itemIndex) != 0);
 
    // Update selected item's checkbox
-   m_Metadata[0]->Select(itemIndex, itemIndexChecked);
+   m_Metadata[selectedServer-1]->Select(itemIndex, itemIndexChecked);
 
    // Update all items checkboxes, in case another one changed because of the itemIndex one
-   UINT selectorCount = m_Metadata[0]->GetSelectorCount();
+   UINT selectorCount = m_Metadata[selectedServer - 1]->GetSelectorCount();
    for (UINT selectorIndex = 0; selectorIndex < selectorCount; selectorIndex++)
    {
-      BOOL bIsSelected = m_Metadata[0]->IsSelected(selectorIndex);
+      BOOL bIsSelected = m_Metadata[selectedServer - 1]->IsSelected(selectorIndex);
       m_checklistMetadata.SetCheck(selectorIndex, bIsSelected ? BST_CHECKED : BST_UNCHECKED);
    }
 }
@@ -580,33 +606,33 @@ void CGigEMetaDataDemoDlg::UpdateMetadataList()
    m_listMetadataView.ResetContent();
    m_listMetadataView2.ResetContent();
 
-   if (!m_Metadata[0]->IsEnabled())
+   if (!m_Metadata[masterServer]->IsEnabled())
       return;
 
-   if (!m_BufferIsValid[m_Buffers[0]->GetIndex()])
+   if (!m_BufferIsValid[m_Buffers[masterServer]->GetIndex()])
       return;
 
    BOOL bExtractStatus = FALSE;
 
    if (m_metadataType == SapMetadata::MetadataPerFrame)
-      bExtractStatus = m_Metadata[0]->Extract(m_Buffers[0]->GetIndex());
+      bExtractStatus = m_Metadata[masterServer]->Extract(m_Buffers[masterServer]->GetIndex());
    else if (m_metadataType == SapMetadata::MetadataPerLine)
    {
       uint markerLine = m_ImageWnd1.GetMarkerLine();
-      bExtractStatus = m_Metadata[0]->Extract(m_Buffers[0]->GetIndex(), markerLine);
+      bExtractStatus = m_Metadata[masterServer]->Extract(m_Buffers[masterServer]->GetIndex(), markerLine);
    }
    else
       return;
 
    if (bExtractStatus)
    {
-      UINT resultCount = m_Metadata[0]->GetExtractedResultCount();
+      UINT resultCount = m_Metadata[masterServer]->GetExtractedResultCount();
 
       for (UINT resultIndex = 0; resultIndex < resultCount; resultIndex++)
       {
          char sResultName[MAX_PATH] = { 0 };
          char sResultValue[MAX_PATH] = { 0 };
-         if (m_Metadata[0]->GetExtractedResult(resultIndex, sResultName, MAX_PATH, sResultValue, MAX_PATH))
+         if (m_Metadata[masterServer]->GetExtractedResult(resultIndex, sResultName, MAX_PATH, sResultValue, MAX_PATH))
          {
             m_listMetadataView.AddString(CString(sResultName));
             m_listMetadataView2.AddString(CString(sResultValue));
@@ -891,8 +917,8 @@ void CGigEMetaDataDemoDlg::UpdateFrameRate(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::CheckForLastFrame(void)
 {
-   // Check for last frame
-   if (m_Buffers[0]->GetIndex() == m_Buffers[0]->GetCount() - 1)
+    // Check for last frame
+   if (m_Buffers[masterServer]->GetIndex() == m_Buffers[masterServer]->GetCount() - 1)
    {
       if (m_bRecordOn)
       {
@@ -904,19 +930,20 @@ void CGigEMetaDataDemoDlg::CheckForLastFrame(void)
          m_bPlayOn = FALSE;
          KillTimer(1);
       }
-
-      CString str = "Buffer test\n";
-      CString tempStr = "Buffer test\n";
-      uint8_t pixel = 0;
-      for (int i = 0; i < m_Buffers[0]->GetCount(); i++) {
+      if (debug) {
+          CString str = "Buffer test\n";
+          CString tempStr = "Buffer test\n";
+          uint8_t pixel = 0;
           for (int j = 0; j < serverCount; j++) {
-              m_Buffers[j]->ReadElement(i, 200, 200, &pixel);
-              tempStr.Format(_T("%d\t"), pixel);
-              str += tempStr;
+            for (int i = 0; i < m_Buffers[j]->GetCount(); i++) {
+                  m_Buffers[j]->ReadElement(i, 200, 200, &pixel);
+                  tempStr.Format(_T("%d\t"), pixel);
+                  str += tempStr;
+              }
+              str += "\n";
           }
-          str += "\n";
+          MessageBox(str);
       }
-      if(debug) MessageBox(str);
 
       UpdateMenu();
 
@@ -1009,7 +1036,19 @@ LRESULT CGigEMetaDataDemoDlg::OnUpdateControls(WPARAM, LPARAM)
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedRecord(void)
 {
+    int masterServer= NULL;
+    
+    //Reset camera timestamps
+    BOOL bIsAvailable = FALSE;
+    for (int i = 0; i < serverCount; i++)
+            m_AcqDevice[i]->SetFeatureValue("timestampControlReset", 1);
+   
+    // Acquire all frames
+    char serverName[CORSERVER_MAX_STRLEN];
+    CString str;
     for (int deviceIndex = 0; deviceIndex < serverCount; deviceIndex++) {
+        SapManager::GetServerName(deviceIndex + 1, serverName, sizeof(serverName)); //Get Server name
+        
         // Reset source and destination indices
         m_Xfer[deviceIndex]->Init();
 
@@ -1022,12 +1061,22 @@ void CGigEMetaDataDemoDlg::OnBnClickedRecord(void)
         for (int bufIndex = 0; bufIndex < bufCount; bufIndex++)
             m_BufferIsValid[bufIndex] = TRUE;
 
-        // Acquire all frames
-        if (m_Xfer[deviceIndex]->Snap(m_Buffers[deviceIndex]->GetCount()))
-        {
-            m_bRecordOn = TRUE;
-            UpdateMenu();
+        if (CString(serverName).Find(_T("NIR")) != std::string::npos) { //Start the NIR cameras first since the need to be waiting for a trigger input
+            if (m_Xfer[deviceIndex]->Snap(m_Buffers[deviceIndex]->GetCount()))
+            {
+                m_bRecordOn = TRUE;
+                UpdateMenu();
+            }
         }
+        else {
+            masterServer = deviceIndex;
+        }
+    }
+    Sleep(500);
+    if (m_Xfer[masterServer]->Snap(m_Buffers[masterServer]->GetCount())) //Start the vis camera last - so it will start triggering the active NIR cameras
+    {
+        m_bRecordOn = TRUE;
+        UpdateMenu();
     }
 }
 
@@ -1056,43 +1105,45 @@ void CGigEMetaDataDemoDlg::OnBnClickedPlay(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedPause(void)
 {
-   if (!m_bPauseOn)
-   {
-      // Check if recording or playing
-      if (m_bRecordOn)
-      {
-         KillTimer(1);
-         // Stop current acquisition
-         if (!m_Xfer[0]->Freeze())
-            return;
+    for (int i = 0; i < serverCount; i++) {
+        if (!m_bPauseOn)
+        {
+            // Check if recording or playing
+            if (m_bRecordOn)
+            {
+                KillTimer(1);
+                // Stop current acquisition
+                if (!m_Xfer[i]->Freeze())
+                    return;
 
-         if (CAbortDlg(this, m_Xfer[0]).DoModal() != IDOK)
-            m_Xfer[0]->Abort();
-      }
-      else if (m_bPlayOn)
-         KillTimer(1); // Stop playback timer
-   }
-   else
-   {
-      // Check if recording or playing
-      if (m_bRecordOn)
-      {
-         int frameTime = max(1, (int)(1000.0 / m_Buffers[0]->GetFrameRate()));
-         SetTimer(1, frameTime, NULL);
-         // Acquire remaining frames
-         if (!m_Xfer[0]->Snap(m_Buffers[0]->GetCount() - m_Buffers[0]->GetIndex() - 1))
-            return;
-      }
-      else if (m_bPlayOn)
-      {
-         // Restart playback timer
-         int frameTime = (int)(1000.0 / m_Buffers[0]->GetFrameRate());
-         SetTimer(1, frameTime, NULL);
-      }
-   }
+                if (CAbortDlg(this, m_Xfer[i]).DoModal() != IDOK)
+                    m_Xfer[i]->Abort();
+            }
+            else if (m_bPlayOn)
+                KillTimer(1); // Stop playback timer
+        }
+        else
+        {
+            // Check if recording or playing
+            if (m_bRecordOn)
+            {
+                int frameTime = max(1, (int)(1000.0 / m_Buffers[i]->GetFrameRate()));
+                SetTimer(1, frameTime, NULL);
+                // Acquire remaining frames
+                if (!m_Xfer[i]->Snap(m_Buffers[i]->GetCount() - m_Buffers[i]->GetIndex() - 1))
+                    return;
+            }
+            else if (m_bPlayOn)
+            {
+                // Restart playback timer
+                int frameTime = (int)(1000.0 / m_Buffers[i]->GetFrameRate());
+                SetTimer(1, frameTime, NULL);
+            }
+        }
 
-   m_bPauseOn = !m_bPauseOn;
-   UpdateMenu();
+        m_bPauseOn = !m_bPauseOn;
+        UpdateMenu();
+    }
 }
 
 //==============================================================================
@@ -1177,41 +1228,46 @@ void CGigEMetaDataDemoDlg::OnBnClickedBufferOptions(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedLoadAcqConfig(void)
 {
-   // Set acquisition parameters
-   CAcqConfigDlg dlg(this, CAcqConfigDlg::ServerAcqDevice);
-   if (dlg.DoModal() == IDOK)
-   {
-      serverCount = SapManager::GetServerCount(SapManager::ResourceAcqDevice); //Only count cameras
-      for (int serverIndex = 0; serverIndex < serverCount; serverIndex++) {
-          // Destroy objects
-          DestroyObjects(serverIndex);
+    char serverName[CORSERVER_MAX_STRLEN];
+    CString str;
 
-          // Backup
-          SapLocation loc = m_AcqDevice[serverIndex]->GetLocation();
-          const char* configFile = m_AcqDevice[serverIndex]->GetConfigFile();
+    for (int serverIndex = 0; serverIndex < serverCount; serverIndex++) {
+        SapManager::GetServerName(serverIndex + 1, serverName, sizeof(serverName)); //Get Server name
+        str.Format(_T("Select config file for camera #%d: %s"), serverIndex, CString(serverName));
+        if(debug) MessageBox(str);
+        // Set acquisition parameters
+        CAcqConfigDlg dlg(this, m_AcqDevice[serverIndex]->GetLocation(), m_AcqDevice[serverIndex]->GetConfigFile(), CAcqConfigDlg::ServerAcqDevice);
+        if (dlg.DoModal() == IDOK)
+        {
+            // Destroy objects
+            DestroyObjects(serverIndex);
 
-          // Update object
-          m_AcqDevice[serverIndex]->SetLocation(dlg.GetLocation());
-          m_AcqDevice[serverIndex]->SetConfigFile(dlg.GetConfigFile());
-          m_Feature[serverIndex]->SetLocation(dlg.GetLocation());
+            // Backup
+            SapLocation loc = m_AcqDevice[serverIndex]->GetLocation();
+            const char* configFile = m_AcqDevice[serverIndex]->GetConfigFile();
 
-          // Recreate objects
-          if (!CreateObjects(serverIndex))
-          {
-              m_AcqDevice[serverIndex]->SetLocation(loc);
-              m_AcqDevice[serverIndex]->SetConfigFile(configFile);
-              m_Feature[serverIndex]->SetLocation(loc);
-              CreateObjects(serverIndex);
-          }
-      }
+            // Update object
+            m_AcqDevice[serverIndex]->SetLocation(dlg.GetLocation());
+            m_AcqDevice[serverIndex]->SetConfigFile(dlg.GetConfigFile());
+            m_Feature[serverIndex]->SetLocation(dlg.GetLocation());
 
-      ReadCameraTimestamp();
+            // Recreate objects
+            if (!CreateObjects(serverIndex))
+            {
+                m_AcqDevice[serverIndex]->SetLocation(loc);
+                m_AcqDevice[serverIndex]->SetConfigFile(configFile);
+                m_Feature[serverIndex]->SetLocation(loc);
+                CreateObjects(serverIndex);
+            }
 
-      m_ImageWnd1.Reset();
-      InvalidateRect(NULL);
-      UpdateWindow();
-      UpdateMenu();
-   }
+            ReadCameraTimestamp();
+
+            m_ImageWnd1.Reset();
+            InvalidateRect(NULL);
+            UpdateWindow();
+            UpdateMenu();
+        }
+    }
 }
 
 //*****************************************************************************************
@@ -1255,14 +1311,16 @@ void CGigEMetaDataDemoDlg::OnBnClickedFileLoad(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedFileSave(void)
 {
-   if (m_Buffers[0]->GetFormat() == SapFormatMono16)
-      MessageBox(_T("Saving images in AVI format requires downsampling them to 8-bit pixel depth.\nYou will not be able to reload this sequence in this application unless you change the buffer format."));
+    for (int i = 0; i < serverCount; i++) {
+        if (m_Buffers[i]->GetFormat() == SapFormatMono16)
+            MessageBox(_T("Saving images in AVI format requires downsampling them to 8-bit pixel depth.\nYou will not be able to reload this sequence in this application unless you change the buffer format."));
 
-   if (m_Buffers[0]->GetFormat() == SapFormatRGBR888)
-      MessageBox(_T("Saving images in AVI format requires conversion to RGB888 format (blue first).\nYou will not be able to reload this sequence in this application unless you change the buffer format."));
+        if (m_Buffers[i]->GetFormat() == SapFormatRGBR888)
+            MessageBox(_T("Saving images in AVI format requires conversion to RGB888 format (blue first).\nYou will not be able to reload this sequence in this application unless you change the buffer format."));
 
-   CLoadSaveDlg dlg(this, m_Buffers[0], FALSE, TRUE);
-   dlg.DoModal();
+        CLoadSaveDlg dlg(this, m_Buffers[i], FALSE, TRUE);
+        dlg.DoModal();
+    }
 }
 
 //==============================================================================
@@ -1272,7 +1330,7 @@ void CGigEMetaDataDemoDlg::OnBnClickedFileSave(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::OnBnClickedFileLoadCurrent(void)
 {
-   CLoadSaveDlg dlg(this, m_Buffers[0], TRUE, FALSE);
+    CLoadSaveDlg dlg(this, m_Buffers[0], TRUE, FALSE);
    if (dlg.DoModal() == IDOK)
    {
       InvalidateRect(NULL);
@@ -1325,44 +1383,48 @@ void CGigEMetaDataDemoDlg::OnBnClickedHighFrameRate()
 void CGigEMetaDataDemoDlg::ReadCameraTimestamp(void)
 {
    BOOL bIsAvailable = FALSE;
-
-   // Current feature name in SFNC
-   if (m_AcqDevice[0]->IsFeatureAvailable("TimestampLatch", &bIsAvailable) && bIsAvailable)
-   {
-      m_AcqDevice[0]->SetFeatureValue("TimestampLatch", 1);
+   CString strArray[3];
+   for (int i = 0; i < serverCount; i++) {
+       m_AcqDevice[i]->SetFeatureValue("timestampControlLatch", 1);
+       //// Current feature name in SFNC
+       //if (m_AcqDevice[i]->IsFeatureAvailable("TimestampLatch", &bIsAvailable) && bIsAvailable)
+       //{
+       //    m_AcqDevice[i]->SetFeatureValue("TimestampLatch", 1);
+       //}
+       //// Deprecated in SFNC
+       //else if (m_AcqDevice[i]->IsFeatureAvailable("GevTimestampControlLatch", &bIsAvailable) && bIsAvailable)
+       //{
+       //    m_AcqDevice[i]->SetFeatureValue("GevTimestampControlLatch", 1);
+       //}
+       //// Specific to Teledyne DALSA
+       //else if (m_AcqDevice[i]->IsFeatureAvailable("timestampControlLatch", &bIsAvailable) && bIsAvailable)
+       //{
+       //    m_AcqDevice[i]->SetFeatureValue("timestampControlLatch", 1);
+       //}
    }
-   // Deprecated in SFNC
-   else if (m_AcqDevice[0]->IsFeatureAvailable("GevTimestampControlLatch", &bIsAvailable) && bIsAvailable)
-   {
-      m_AcqDevice[0]->SetFeatureValue("GevTimestampControlLatch", 1);
-   }
-   // Specific to Teledyne DALSA
-   else if (m_AcqDevice[0]->IsFeatureAvailable("timestampControlLatch", &bIsAvailable) && bIsAvailable)
-   {
-      m_AcqDevice[0]->SetFeatureValue("timestampControlLatch", 1);
-   }
-
    UINT64 timestamp = 0;
-
-   // Current feature name in SFNC
-   if (m_AcqDevice[0]->IsFeatureAvailable("TimestampLatchValue", &bIsAvailable) && bIsAvailable)
-   {
-      m_AcqDevice[0]->GetFeatureValue("TimestampLatchValue", &timestamp);
+   for (int i = 0; i < serverCount; i++) {
+       // Current feature name in SFNC
+       if (m_AcqDevice[i]->IsFeatureAvailable("TimestampLatchValue", &bIsAvailable) && bIsAvailable)
+       {
+           m_AcqDevice[i]->GetFeatureValue("TimestampLatchValue", &timestamp);
+       }
+       // Deprecated in SFNC
+       else if (m_AcqDevice[i]->IsFeatureAvailable("GevTimestampValue", &bIsAvailable) && bIsAvailable)
+       {
+           m_AcqDevice[i]->GetFeatureValue("GevTimestampValue", &timestamp);
+       }
+       // Specific to Teledyne DALSA
+       else if (m_AcqDevice[i]->IsFeatureAvailable("timestampValue", &bIsAvailable) && bIsAvailable)
+       {
+           m_AcqDevice[i]->GetFeatureValue("timestampValue", &timestamp);
+       }
+       char strBuf[64];
+       _ui64toa_s(timestamp, strBuf, sizeof(strBuf), 10);
+       m_TimestampCurrent = CString(strBuf);
+       strArray[i] = m_TimestampCurrent;
    }
-   // Deprecated in SFNC
-   else if (m_AcqDevice[0]->IsFeatureAvailable("GevTimestampValue", &bIsAvailable) && bIsAvailable)
-   {
-      m_AcqDevice[0]->GetFeatureValue("GevTimestampValue", &timestamp);
-   }
-   // Specific to Teledyne DALSA
-   else if (m_AcqDevice[0]->IsFeatureAvailable("timestampValue", &bIsAvailable) && bIsAvailable)
-   {
-      m_AcqDevice[0]->GetFeatureValue("timestampValue", &timestamp);
-   }
-
-   char strBuf[64];
-   _ui64toa_s(timestamp, strBuf, sizeof(strBuf), 10);
-   m_TimestampCurrent = CString(strBuf);
+   m_TimestampCurrent.Format(_T("%s %s %s"), strArray[0], strArray[1], strArray[2]);
 }
 
 void CGigEMetaDataDemoDlg::OnBnClickedReadCurrentTimestamp()
@@ -1375,26 +1437,27 @@ void CGigEMetaDataDemoDlg::OnBnClickedReadCurrentTimestamp()
 void CGigEMetaDataDemoDlg::OnBnClickedResetTimestamp()
 {
    BOOL bIsAvailable = FALSE;
-
-   // Current feature name in SFNC
-   if (m_AcqDevice[0]->IsFeatureAvailable("TimestampReset", &bIsAvailable) && bIsAvailable)
-   {
-      m_AcqDevice[0]->SetFeatureValue("TimestampReset", 1);
-   }
-   // Deprecated in SFNC
-   else if (m_AcqDevice[0]->IsFeatureAvailable("GevTimestampControlReset", &bIsAvailable) && bIsAvailable)
-   {
-      m_AcqDevice[0]->SetFeatureValue("GevTimestampControlReset", 1);
-   }
-   // Specific to Teledyne DALSA
-   else if (m_AcqDevice[0]->IsFeatureAvailable("timestampControlReset", &bIsAvailable) && bIsAvailable)
-   {
-      m_AcqDevice[0]->SetFeatureValue("timestampControlReset", 1);
-   }
-   else
-   {
-      MessageBox(_T("Timestamp reset is not supported for this camera"));
-      return;
+   for (int i = 0; i < serverCount; i++) {
+       //// Current feature name in SFNC
+       //if (m_AcqDevice[i]->IsFeatureAvailable("TimestampReset", &bIsAvailable) && bIsAvailable)
+       //{
+       //    m_AcqDevice[i]->SetFeatureValue("TimestampReset", 1);
+       //}
+       //// Deprecated in SFNC
+       //else if (m_AcqDevice[i]->IsFeatureAvailable("GevTimestampControlReset", &bIsAvailable) && bIsAvailable)
+       //{
+       //    m_AcqDevice[i]->SetFeatureValue("GevTimestampControlReset", 1);
+       //}
+       //// Specific to Teledyne DALSA
+       //else if (m_AcqDevice[i]->IsFeatureAvailable("timestampControlReset", &bIsAvailable) && bIsAvailable)
+       //{
+           m_AcqDevice[i]->SetFeatureValue("timestampControlReset", 1);
+       //}
+       //else
+       //{
+       //    MessageBox(_T("Timestamp reset is not supported for this camera"));
+       //    return;
+       //}
    }
 
    OnBnClickedReadCurrentTimestamp();
@@ -1412,4 +1475,22 @@ BOOL CGigEMetaDataDemoDlg::PreTranslateMessage(MSG* pMsg)
    }
 
    return CDialog::PreTranslateMessage(pMsg);
+}
+
+void CGigEMetaDataDemoDlg::StartCounter()
+{
+    LARGE_INTEGER li;
+    if (!QueryPerformanceFrequency(&li))
+        MessageBox(_T("QueryPerformanceFrequency failed!\n"));
+
+    PCFreq = double(li.QuadPart) / 1000.0;
+
+    QueryPerformanceCounter(&li);
+    CounterStart = li.QuadPart;
+}
+double CGigEMetaDataDemoDlg::GetCounter()
+{
+    LARGE_INTEGER li;
+    QueryPerformanceCounter(&li);
+    return double(li.QuadPart - CounterStart) / PCFreq;
 }
