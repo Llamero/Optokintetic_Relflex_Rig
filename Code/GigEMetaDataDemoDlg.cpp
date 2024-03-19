@@ -58,6 +58,8 @@ CGigEMetaDataDemoDlg::CGigEMetaDataDemoDlg(CWnd* pParent)
    std::vector<SapAcqDevice*> m_Feature(serverCount, NULL); //https://stackoverflow.com/questions/5887615/creating-an-array-of-object-pointers-c
    m_Buffers.resize(serverCount);
    std::vector<SapAcqDevice*> m_Buffers(serverCount, NULL); //https://stackoverflow.com/questions/5887615/creating-an-array-of-object-pointers-c
+   m_tempBuffers.resize(serverCount);
+   std::vector<SapAcqDevice*> m_tempBuffers(serverCount, NULL); //https://stackoverflow.com/questions/5887615/creating-an-array-of-object-pointers-c
    m_Xfer.resize(serverCount);
    std::vector<SapAcqDevice*> m_Xfer(serverCount, NULL); //https://stackoverflow.com/questions/5887615/creating-an-array-of-object-pointers-c
    m_View.resize(serverCount);
@@ -81,6 +83,7 @@ CGigEMetaDataDemoDlg::CGigEMetaDataDemoDlg(CWnd* pParent)
    m_MetadataFileIndex = 1;
 
    m_BufferIsValid = NULL;
+   m_tempBufferIsValid = NULL;
 
    m_TimestampCurrent = _T("");
    m_TimestampBuffer = 0;
@@ -281,6 +284,7 @@ BOOL CGigEMetaDataDemoDlg::OnInitDialog(void)
        m_AcqDevice[serverIndex] = new SapAcqDevice(location, dlg.GetConfigFile());
        m_Feature[serverIndex] = new SapFeature(location);
        m_Buffers[serverIndex] = new SapBufferWithTrash(MAX_BUFFER);
+       m_tempBuffers[serverIndex] = new SapBufferWithTrash(MAX_BUFFER);
        m_Metadata[serverIndex] = new SapMetadata(m_AcqDevice[serverIndex], m_Buffers[serverIndex]);
        if(true) m_Xfer[serverIndex] = new SapAcqDeviceToBuf(m_AcqDevice[serverIndex], m_Buffers[serverIndex], XferCallback, this);
        else m_Xfer[serverIndex] = new SapAcqDeviceToBuf(m_AcqDevice[serverIndex], m_Buffers[serverIndex], NULL, this); //Dont waste time doing call back for buffers that aren't displayed
@@ -388,8 +392,22 @@ BOOL CGigEMetaDataDemoDlg::CreateObjects(int deviceIndex, bool createView, bool 
       }
       // Clear all buffers
       m_Buffers[deviceIndex]->Clear();
-
       m_BufferIsValid = new BOOL[m_Buffers[deviceIndex]->GetCount()];
+
+   }
+
+   // Create temp buffer object
+   if (m_tempBuffers[deviceIndex] && !*m_tempBuffers[deviceIndex])
+   {
+       if (!m_tempBuffers[deviceIndex]->Create())
+       {
+           DestroyObjects(deviceIndex);
+           return FALSE;
+       }
+       // Clear temp all buffers
+       m_tempBuffers[deviceIndex]->Clear();
+
+       m_tempBufferIsValid = new BOOL[m_tempBuffers[deviceIndex]->GetCount()];
    }
 
    // Create view object
@@ -519,6 +537,16 @@ BOOL CGigEMetaDataDemoDlg::DestroyObjects(int deviceIndex, bool destroyAcqDevice
 
    if (m_Buffers[deviceIndex] && *m_Buffers[deviceIndex])
       m_Buffers[deviceIndex]->Destroy();
+
+   // Destroy temp buffer object
+   if (m_tempBufferIsValid != NULL)
+   {
+       delete[] m_tempBufferIsValid;
+       m_tempBufferIsValid = NULL;
+   }
+
+   if (m_tempBuffers[deviceIndex] && *m_tempBuffers[deviceIndex])
+       m_tempBuffers[deviceIndex]->Destroy();
 
    // Destroy metadata object
    if (m_Metadata[deviceIndex] && *m_Metadata[deviceIndex])
@@ -917,6 +945,7 @@ void CGigEMetaDataDemoDlg::UpdateFrameRate(void)
 //==============================================================================
 void CGigEMetaDataDemoDlg::CheckForLastFrame(void)
 {
+    static bool save = false;
     // Check for last frame
    if (m_Buffers[masterServer]->GetIndex() == m_Buffers[masterServer]->GetCount() - 1)
    {
@@ -948,6 +977,15 @@ void CGigEMetaDataDemoDlg::CheckForLastFrame(void)
       UpdateMenu();
 
       UpdateMetadataList();
+   }
+   else if (m_Buffers[0]->GetIndex() == 50 && !save) {
+       save = true;
+       CString pathName;
+       pathName.Format(_T("E:/Sapera_temp/test.raw"));
+       m_tempBuffers[0]->CopyAll(m_Buffers[0]);
+       //m_Buffers[0]->SetIndex(0);
+       if (m_tempBuffers[0]->Save((CStringA)pathName, "-format raw", 1, 10));
+       else MessageBox(_T("N"));
    }
 }
 
@@ -1200,6 +1238,9 @@ void CGigEMetaDataDemoDlg::OnBnClickedBufferOptions(void)
 
            // Update buffer object
            SapBuffer buf = *m_Buffers[i];
+           CString str;
+           str.Format(_T("%d"), dlg.m_Count);
+           MessageBox(str);
            *m_Buffers[i] = dlg.GetBuffer();
 
            // Recreate objects

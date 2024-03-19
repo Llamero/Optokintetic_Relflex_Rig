@@ -3,13 +3,13 @@
   "WorkspaceRootPath": "C:\\Users\\OKR Rig\\Documents\\GitHub\\Optokintetic_Relflex_Rig\\Code\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{AE41E186-7F65-477A-9F9E-025D5F4D9073}|..\\..\\..\\..\\..\\..\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemo_2019.vcxproj|C:\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemoDlg.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{AE41E186-7F65-477A-9F9E-025D5F4D9073}|..\\..\\..\\..\\..\\..\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemo_2019.vcxproj|C:\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemoDlg.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{FDA57B35-1A4E-46F9-85EA-DCD15C7D4011}|..\\..\\..\\..\\..\\..\\Program Files\\Teledyne DALSA\\Sapera\\Classes\\Gui\\SapClassGui_2019.vcxproj|C:\\PROGRAM FILES\\MICROSOFT VISUAL STUDIO\\2022\\COMMUNITY\\VC\\TOOLS\\MSVC\\14.39.33519\\ATLMFC\\INCLUDE\\ATLSIMPSTR.H||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{FDA57B35-1A4E-46F9-85EA-DCD15C7D4011}|..\\..\\..\\..\\..\\..\\Program Files\\Teledyne DALSA\\Sapera\\Classes\\Gui\\SapClassGui_2019.vcxproj|C:\\Program Files\\Teledyne DALSA\\Sapera\\Classes\\Gui\\LoadSaveDlg.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{AE41E186-7F65-477A-9F9E-025D5F4D9073}|..\\..\\..\\..\\..\\..\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemo_2019.vcxproj|C:\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemoDlg.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -19,43 +19,43 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "atlsimpstr.h",
-              "DocumentMoniker": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\atlmfc\\include\\atlsimpstr.h",
-              "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\atlmfc\\include\\atlsimpstr.h",
-              "ToolTip": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\atlmfc\\include\\atlsimpstr.h",
-              "RelativeToolTip": "..\\..\\..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.39.33519\\atlmfc\\include\\atlsimpstr.h",
-              "ViewState": "AQIAADsAAAAAAAAAAAAowFkAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2024-03-16T01:12:17.604Z",
+              "DocumentIndex": 1,
+              "Title": "LoadSaveDlg.cpp",
+              "DocumentMoniker": "C:\\Program Files\\Teledyne DALSA\\Sapera\\Classes\\Gui\\LoadSaveDlg.cpp",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\..\\Program Files\\Teledyne DALSA\\Sapera\\Classes\\Gui\\LoadSaveDlg.cpp",
+              "ToolTip": "C:\\Program Files\\Teledyne DALSA\\Sapera\\Classes\\Gui\\LoadSaveDlg.cpp",
+              "RelativeToolTip": "..\\..\\..\\..\\..\\..\\Program Files\\Teledyne DALSA\\Sapera\\Classes\\Gui\\LoadSaveDlg.cpp",
+              "ViewState": "AQIAAI4AAAAAAAAAAAAlwKgAAAAHAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-03-19T21:04:57.649Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "GigEMetaDataDemoDlg.h",
               "DocumentMoniker": "C:\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemoDlg.h",
               "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\..\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemoDlg.h",
-              "ToolTip": "C:\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemoDlg.h*",
-              "RelativeToolTip": "..\\..\\..\\..\\..\\..\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemoDlg.h*",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABUAAAAgAAAA",
+              "ToolTip": "C:\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemoDlg.h",
+              "RelativeToolTip": "..\\..\\..\\..\\..\\..\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemoDlg.h",
+              "ViewState": "AQIAADAAAAAAAAAAAAAAADUAAAAfAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-03-15T23:24:20.477Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "GigEMetaDataDemoDlg.cpp",
               "DocumentMoniker": "C:\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemoDlg.cpp",
               "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\..\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemoDlg.cpp",
               "ToolTip": "C:\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemoDlg.cpp",
               "RelativeToolTip": "..\\..\\..\\..\\..\\..\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Classes\\Vc\\GigEMetaDataDemo\\GigEMetaDataDemoDlg.cpp",
-              "ViewState": "AQIAAAQBAAAAAAAAAAAowEEBAAAbAAAA",
+              "ViewState": "AQIAAG4CAAAAAAAAAAAuwIUCAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-03-15T20:08:25.446Z",
               "EditorCaption": ""
