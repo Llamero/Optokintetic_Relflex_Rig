@@ -20,11 +20,11 @@
 // Temp (°C) for min fan speed
 #define FANMINTEMP 25
 // Temp (°C) for max fan speed
-#define FANMAXTEMP 35
+#define FANMAXTEMP 27
 
 #include <elapsedMillis.h>
 float thermistor_temp[2];
-const uint8_t FAN_PIN[2] = {10, 11};
+const uint8_t FAN_PIN[3] = {10, 9, 11};
 elapsedMillis serial_timer;
 
 void setup(void) {
@@ -62,23 +62,29 @@ void loop(void) {
     ADC_temp[i] -= 273.15;                         // convert absolute temp to C
     
     fan_speed[i] = 255*((ADC_temp[i]-FANMINTEMP)/(FANMAXTEMP-FANMINTEMP));
-    if(fan_speed[i] <= 0) fan_pwm = 0;
-    else if(fan_speed[i] >= 255) fan_pwm = 255;
-    else fan_pwm = round(fan_speed[i]);
+    if(fan_speed[i] <= 0) fan_speed[i] = 0;
+    else if(fan_speed[i] >= 255) fan_speed[i] = 255;
+    fan_pwm = round(fan_speed[i]);
     if(serial_timer > 1000){
       Serial.print("LED#");
       Serial.print(i);
-      Serial.print(": ");
-      Serial.print("Temperature "); 
+      Serial.print(": "); 
       Serial.print(ADC_temp[i]);
       Serial.print(" °C, ");
-      Serial.print("Fan PWM "); 
+      Serial.print("Fan: "); 
       Serial.print(fan_pwm);
       Serial.print(". ");
       analogWrite(FAN_PIN[i], fan_pwm);
     }
   }
+  //Set driver fan speed to match fastest LED fan speed
   if(serial_timer > 1000){
+    if (fan_speed[0] > fan_speed[1]) fan_pwm = round(fan_speed[0]);
+    else fan_pwm = round(fan_speed[1]);
+    Serial.print("Driver fan: ");
+    Serial.print(fan_pwm);
+    Serial.print(". ");
+    analogWrite(FAN_PIN[2], fan_pwm);
     Serial.println();
     serial_timer = 0;
   }
