@@ -21,6 +21,8 @@
 #define FANMINTEMP 25
 // Temp (°C) for max fan speed
 #define FANMAXTEMP 27
+//Maximum allowed fanspeed (0-255).  Low = quieter + hotter.
+# define MAXFANSPEED 200
 
 #include <elapsedMillis.h>
 float thermistor_temp[2];
@@ -63,7 +65,7 @@ void loop(void) {
     
     fan_speed[i] = 255*((ADC_temp[i]-FANMINTEMP)/(FANMAXTEMP-FANMINTEMP));
     if(fan_speed[i] <= 0) fan_speed[i] = 0;
-    else if(fan_speed[i] >= 255) fan_speed[i] = 255;
+    else if(fan_speed[i] >= MAXFANSPEED) fan_speed[i] = MAXFANSPEED;
     fan_pwm = round(fan_speed[i]);
     if(serial_timer > 1000){
       Serial.print("LED#");
