@@ -22,16 +22,19 @@
 // Temp (°C) for max fan speed
 #define FANMAXTEMP 27
 //Maximum allowed fanspeed (0-255).  Low = quieter + hotter.
-# define MAXFANSPEED 200
+#define MAXFANSPEED 200
+//Temperature threshold for audible alarm
+#define ALARMTEMP 50
 
 #include <elapsedMillis.h>
 float thermistor_temp[2];
 const uint8_t FAN_PIN[3] = {10, 9, 11};
 elapsedMillis serial_timer;
+elapsedMicros alarm_timer;
 
 void setup(void) {
   Serial.begin(9600);
-  DDRD = B11110000;
+  DDRD = B11111100;
   PORTD = B01100000;
 }
 
@@ -40,6 +43,7 @@ void loop(void) {
   float ADC_temp[2];
   float fan_speed[2];
   uint8_t fan_pwm;
+  bool alarm = false;
 
   // take N samples in a row, with a slight delay
   i = NUMSAMPLES;
@@ -89,5 +93,16 @@ void loop(void) {
     analogWrite(FAN_PIN[2], fan_pwm);
     Serial.println();
     serial_timer = 0;
+  }
+  if(ADC_temp[0] >= ALARMTEMP || ADC_temp[1] >= ALARMTEMP){
+    uint32_t start = serial_timer;
+    while(serial_timer - start < 500){
+      if(alarm_timer < 166) PORTD = B01101000; 
+      else if(alarm_timer < 333) PORTD = B01100100; 
+      else alarm_timer = 0;
+    }
+  }
+  else{
+    PORTD = B01100000; 
   }
 }
