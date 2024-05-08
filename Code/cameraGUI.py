@@ -1,24 +1,31 @@
+import binascii
 import ctypes
 import math
 import os
 import sys
 import time
 from ctypes import windll, Structure, c_long, byref
-from win32gui import FindWindow, GetWindowRect, IsWindowVisible, GetWindowText, EnumWindows, MoveWindow
-from win32con import MOUSEEVENTF_WHEEL, WHEEL_DELTA, KEYEVENTF_KEYUP, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP
+from win32gui import FindWindow, GetWindowRect, IsWindowVisible, GetWindowText, EnumWindows, MoveWindow, SendMessage
+from win32con import MOUSEEVENTF_WHEEL, WHEEL_DELTA, KEYEVENTF_KEYUP, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP, WM_CLOSE
 from win32api import mouse_event, keybd_event, GetSystemMetrics
+import win32com.client as comclt #used for pressing keyboard buttons
+from win32process import GetWindowThreadProcessId
+from psutil import Process, pid_exists
+import getpixelcolor as pixel
 
 
 class CameraGui:
     def __init__(self, index):
+        self.wsh = comclt.Dispatch("WScript.Shell") #Start shell to allow for key presses
         self.index = index #Index of camera in drop-down menu (Starts at 0)
         self.enum_windows = dict()  # List of currently visible windows
         self.window_rect = dict()  # Bounding box of current window
         self.cur_pos = {"x": 0, "y": 0}  # Current absolute mouse position
-        self.pos_dict = {"Camera Select": (0.1, 0.1), "Preview": (0.5, 0.5), "Record": (0.34, 0.19),
+        self.pos_dict = {"Camera Select": (0.1, 0.1), "Preview": (0.5, 0.5), "Record": 'r',
                                "Play": 'p', "Pause": (0.5, 0.19), "Stop": (0.6, 0.19),
                                "Load Config": 'l', "Save Seq": 's', "Reset": (0.88, 0.19),
-                               "High Frame Rate": 'h', "Buffer": 'b', "Save Metadata": (0.2, 0.97)
+                               "High Frame Rate": 'h', "Buffer": 'b', "Save Metadata": (0.2, 0.97),
+                         "Number Pixel": (0.274, 0.192)
                          }#Position of widgets relative to window size
         self.current_hwnd = None #Current OS window object
         self.keypress_dict = {"Save seq": 's', "Load Config": 'l',
@@ -27,8 +34,7 @@ class CameraGui:
         # Get size of screen - https://stackoverflow.com/questions/3129322/how-do-i-get-monitor-resolution-in-python
         self.screen_width = GetSystemMetrics(0)  # 1280
         self.screen_height = GetSystemMetrics(1)  # 800
-        print(self.screen_width)
-        print(self.screen_height)
+        self.camera_type = "None"
         self.y_shift = -0.18
         self.half_screen_w = round(self.screen_width / 2)
         self.half_screen_h = round(self.screen_height / 2)
@@ -44,9 +50,11 @@ class CameraGui:
         self.pressReturn()
         time.sleep(0.5)
         self.tileWindow()
-        self.resizeImage(-1)
+        self.resizeImage(6)
         #self.showCursorPosition()
-        self.pressButton("Record")
+        #self.pressButton("Record")
+        #self.closeProgram()
+
 
     def __winEnumHandler(self, hwnd, ctx):  # https://stackoverflow.com/questions/55547940/how-to-get-a-list-of-the-name-of-every-open-window
         if IsWindowVisible(hwnd):
@@ -91,8 +99,24 @@ class CameraGui:
         mouse_event(MOUSEEVENTF_WHEEL,rel_pos["x"] +self.window_rect[0],rel_pos["y"] +self.window_rect[1], 5 * WHEEL_DELTA,
                     0)  # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mouse_event - spin mouse wheel to top of menu list
         time.sleep(0.2)
-        mouse_event(MOUSEEVENTF_WHEEL,rel_pos["x"] +self.window_rect[0],rel_pos["y"] +self.window_rect[1],
-                    -1 * self.index * WHEEL_DELTA, 0)  # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mouse_event - spin mouse wheel to desired camera
+
+        #Open the two nIR cameras first then the color camera
+        nIR = -1
+        for i in range(3):
+            time.sleep(0.1)
+            self.getCameraID()
+            if("nIR" in self.camera_type):
+                nIR += 1
+            if(self.index == 0 and nIR == 0): #If camera is nIR #1
+                return
+            elif(self.index == 1 and nIR == 1): #If camera is nIR #2
+                return
+            elif(self.index == 2 and "color" in self.camera_type): #If camera is color
+                return
+            mouse_event(MOUSEEVENTF_WHEEL,rel_pos["x"] +self.window_rect[0],rel_pos["y"] +self.window_rect[1],
+                        -1 * WHEEL_DELTA, 0)  # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mouse_event - spin mouse wheel to desired camera
+        else:
+            print("ERROR: Camera not found!")
 
     def pressReturn(self):
         # Press the return key to go to the main window
@@ -123,15 +147,19 @@ class CameraGui:
 
     def pressButton(self, button):
         try:
+            rel_pos = {"x": round(self.pos_dict["Preview"][0] * self.half_screen_w + self.window_rect[0]), "y": round(
+                self.pos_dict["Preview"][1] * self.half_screen_h + self.window_rect[1])} #Click on window if keypress is used
             if(type(self.pos_dict[button]) is tuple):
-                self.getWindowPos("Sapera GigE-Vision MetaData Demo (Per-Frame Metadata)")  # record new position
                 rel_pos = {"x": round(self.pos_dict[button][0] * self.half_screen_w + self.window_rect[0]), "y": round(
                     self.pos_dict[button][1] * self.half_screen_h + self.window_rect[1])} # https://stackoverflow.com/questions/1181464/controlling-mouse-with-python - move cursor to camera select postion
-                print(self.window_rect)
-                print(rel_pos)
-                ctypes.windll.user32.SetCursorPos(rel_pos["x"], rel_pos["y"]) #Move mouse to button
-                mouse_event(MOUSEEVENTF_LEFTDOWN, rel_pos["x"], rel_pos["y"], 0, 0)
-                mouse_event(MOUSEEVENTF_LEFTUP, rel_pos["x"], rel_pos["y"], 0, 0)
+            ctypes.windll.user32.SetCursorPos(rel_pos["x"], rel_pos["y"]) #Move mouse to button
+            mouse_event(MOUSEEVENTF_LEFTDOWN, rel_pos["x"], rel_pos["y"], 0, 0) #Click mouse button
+            time.sleep(0.01)
+            mouse_event(MOUSEEVENTF_LEFTUP, rel_pos["x"], rel_pos["y"], 0, 0)
+            time.sleep(0.05)
+            if (type(self.pos_dict[button]) is str):
+                self.wsh.SendKeys(self.pos_dict[button]) # send the keys you want
+
         except KeyError:
             print("ERROR: No matches found for button key: " + str(button))
 
@@ -159,6 +187,23 @@ class CameraGui:
                 rel_pos["x"] = (cur_pos["x"] -self.window_rect[0]) / (self.window_rect[2] - self.window_rect[0])
                 rel_pos["y"] = (cur_pos["y"] -self.window_rect[1]) / (self.window_rect[3] - self.window_rect[1])
                 print(rel_pos)
+
+    def closeProgram(self): #https://stackoverflow.com/questions/49593533/how-to-close-a-window-in-python-by-name
+        _, pid = GetWindowThreadProcessId(self.current_hwnd)
+        process = Process(pid=pid)
+        SendMessage(self.current_hwnd, WM_CLOSE, 0, 0)
+        if pid_exists(pid=pid):
+            process.kill()
+
+    #Use text at the end of device name to differentiate color from nIR cameras
+    def getCameraID(self):
+        pixels = pixel.average(round(self.pos_dict["Number Pixel"][0] * (self.window_rect[2] - self.window_rect[0]) + self.window_rect[0]), round(
+                self.pos_dict["Number Pixel"][1] * (self.window_rect[3] - self.window_rect[1]) + self.window_rect[1]), 24, 12)
+        if(pixels[0] > 210):
+            self.camera_type = "color"
+        else:
+            self.camera_type = "nIR"
+
 class POINT(Structure):
     _fields_ = [("x", c_long), ("y", c_long)]
 

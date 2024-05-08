@@ -1,0 +1,1 @@
+Change color of Frame Buffer spinbox depending on the level of binning required
