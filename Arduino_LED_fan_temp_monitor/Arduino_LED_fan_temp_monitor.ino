@@ -36,6 +36,7 @@ void setup(void) {
   Serial.begin(9600);
   DDRD = B11111100;
   PORTD = B01100000;
+  pinMode(12, OUTPUT);
 }
 
 void loop(void) {
@@ -93,6 +94,8 @@ void loop(void) {
     analogWrite(FAN_PIN[2], fan_pwm);
     Serial.println();
     serial_timer = 0;
+    if (fan_pwm > 0) digitalWrite(12, HIGH); 
+    else digitalWrite(12, LOW); 
   }
   if(ADC_temp[0] >= ALARMTEMP || ADC_temp[1] >= ALARMTEMP){
     uint32_t start = serial_timer;

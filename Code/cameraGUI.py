@@ -1,0 +1,166 @@
+import ctypes
+import math
+import os
+import sys
+import time
+from ctypes import windll, Structure, c_long, byref
+from win32gui import FindWindow, GetWindowRect, IsWindowVisible, GetWindowText, EnumWindows, MoveWindow
+from win32con import MOUSEEVENTF_WHEEL, WHEEL_DELTA, KEYEVENTF_KEYUP, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP
+from win32api import mouse_event, keybd_event, GetSystemMetrics
+
+
+class CameraGui:
+    def __init__(self, index):
+        self.index = index #Index of camera in drop-down menu (Starts at 0)
+        self.enum_windows = dict()  # List of currently visible windows
+        self.window_rect = dict()  # Bounding box of current window
+        self.cur_pos = {"x": 0, "y": 0}  # Current absolute mouse position
+        self.pos_dict = {"Camera Select": (0.1, 0.1), "Preview": (0.5, 0.5), "Record": (0.34, 0.19),
+                               "Play": 'p', "Pause": (0.5, 0.19), "Stop": (0.6, 0.19),
+                               "Load Config": 'l', "Save Seq": 's', "Reset": (0.88, 0.19),
+                               "High Frame Rate": 'h', "Buffer": 'b', "Save Metadata": (0.2, 0.97)
+                         }#Position of widgets relative to window size
+        self.current_hwnd = None #Current OS window object
+        self.keypress_dict = {"Save seq": 's', "Load Config": 'l',
+                              "Play": 'p'}
+
+        # Get size of screen - https://stackoverflow.com/questions/3129322/how-do-i-get-monitor-resolution-in-python
+        self.screen_width = GetSystemMetrics(0)  # 1280
+        self.screen_height = GetSystemMetrics(1)  # 800
+        print(self.screen_width)
+        print(self.screen_height)
+        self.y_shift = -0.18
+        self.half_screen_w = round(self.screen_width / 2)
+        self.half_screen_h = round(self.screen_height / 2)
+        self.half_screen_h = round(self.half_screen_h/(1+self.y_shift))
+        self.x_offset = (self.index%2) * self.half_screen_w #Calculate position of top left corner of window
+        self.y_offset = round((math.floor(self.index/2)+self.y_shift) * self.half_screen_h) #Calculate position of top left corner of window
+        if(index > 1): #Add an extra offset to the second row to make the "Save Metadata" button visible
+            self.y_offset += round(self.y_shift * self.half_screen_h)
+        self.bkgnd_windows = self.getWindowList() #List of all open windows at start of program - used to identify which window is new.
+        self.startSoftware() #Start the camera software
+        self.getWindowPos("Acquisition Configuration")
+        self.selectCamera(self.index)
+        self.pressReturn()
+        time.sleep(0.5)
+        self.tileWindow()
+        self.resizeImage(-1)
+        #self.showCursorPosition()
+        self.pressButton("Record")
+
+    def __winEnumHandler(self, hwnd, ctx):  # https://stackoverflow.com/questions/55547940/how-to-get-a-list-of-the-name-of-every-open-window
+        if IsWindowVisible(hwnd):
+            self.enum_windows[hwnd] = GetWindowText(hwnd)
+
+
+    def getWindowList(self):
+        # Get list of all visible background windows
+        EnumWindows(self.__winEnumHandler, None)
+        return self.enum_windows.copy()
+
+    def startSoftware(self):
+        # Start the camera software
+        os.startfile("C:\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Binaries\\GigEMetaDataDemo.exe")
+        time.sleep(1)
+
+
+    def getWindowPos(self, window_name):
+        global window_rect
+        global current_hwnd
+        # get position of camera software window
+        EnumWindows(self.__winEnumHandler, None)  # Get list of all visible windows
+        for key, value in self.enum_windows.items():
+            if window_name in value:  # https://realpython.com/python-string-contains-substring/
+                for b_key, b_value in self.bkgnd_windows.items():  # check that the window isn't already a background window
+                    if b_key == key:
+                        break
+                else:
+                    self.window_rect = GetWindowRect(key)
+                    self.current_hwnd = key
+                    return
+        else:
+            print("ERROR: Window Not Found!")
+
+    def selectCamera(self, index):
+        rel_pos = {"x": round(self.pos_dict["Camera Select"][0] * self.window_rect[2]), "y": round(
+            self.pos_dict["Camera Select"][1] * self.window_rect[3])}  # Move to mouse position relative to top window corner
+
+        # Move cursor to camera select and use mousewheel to select the camera
+        ctypes.windll.user32.SetCursorPos(rel_pos["x"] +self.window_rect[0],rel_pos["y"] +self.window_rect[
+            1])  # https://stackoverflow.com/questions/1181464/controlling-mouse-with-python - move cursor to camera select postion
+        mouse_event(MOUSEEVENTF_WHEEL,rel_pos["x"] +self.window_rect[0],rel_pos["y"] +self.window_rect[1], 5 * WHEEL_DELTA,
+                    0)  # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mouse_event - spin mouse wheel to top of menu list
+        time.sleep(0.2)
+        mouse_event(MOUSEEVENTF_WHEEL,rel_pos["x"] +self.window_rect[0],rel_pos["y"] +self.window_rect[1],
+                    -1 * self.index * WHEEL_DELTA, 0)  # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mouse_event - spin mouse wheel to desired camera
+
+    def pressReturn(self):
+        # Press the return key to go to the main window
+        keybd_event(0x0D, 0, 0, 0)
+        time.sleep(0.05)
+        keybd_event(0x0D, 0, KEYEVENTF_KEYUP, 0)
+
+    def tileWindow(self):
+        # Resize and reposition the main demo window
+        self.getWindowPos("Sapera GigE-Vision MetaData Demo (Per-Frame Metadata)") #Get hwnd for window
+        MoveWindow(self.current_hwnd, self.x_offset, self.y_offset, self.half_screen_w, self.half_screen_h, True)
+        self.getWindowPos("Sapera GigE-Vision MetaData Demo (Per-Frame Metadata)") #record new position
+        time.sleep(0.5)
+
+    def resizeImage(self, n_steps):
+        # Resize the camera view to match the window
+        pos = (round((self.half_screen_w * self.pos_dict["Preview"][0]) + self.x_offset)), round((self.half_screen_h * self.pos_dict["Preview"][1]) + self.y_offset)
+        delta = WHEEL_DELTA
+        if(n_steps < 0):
+            delta *= -1
+            n_steps *= -1
+        for i in range(n_steps):
+            ctypes.windll.user32.SetCursorPos(pos[0], pos[
+                1])  # https://stackoverflow.com/questions/1181464/controlling-mouse-with-python
+            mouse_event(MOUSEEVENTF_WHEEL, pos[0], pos[1], delta,
+                        0)  # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mouse_event
+            time.sleep(0.1)
+
+    def pressButton(self, button):
+        try:
+            if(type(self.pos_dict[button]) is tuple):
+                self.getWindowPos("Sapera GigE-Vision MetaData Demo (Per-Frame Metadata)")  # record new position
+                rel_pos = {"x": round(self.pos_dict[button][0] * self.half_screen_w + self.window_rect[0]), "y": round(
+                    self.pos_dict[button][1] * self.half_screen_h + self.window_rect[1])} # https://stackoverflow.com/questions/1181464/controlling-mouse-with-python - move cursor to camera select postion
+                print(self.window_rect)
+                print(rel_pos)
+                ctypes.windll.user32.SetCursorPos(rel_pos["x"], rel_pos["y"]) #Move mouse to button
+                mouse_event(MOUSEEVENTF_LEFTDOWN, rel_pos["x"], rel_pos["y"], 0, 0)
+                mouse_event(MOUSEEVENTF_LEFTUP, rel_pos["x"], rel_pos["y"], 0, 0)
+        except KeyError:
+            print("ERROR: No matches found for button key: " + str(button))
+
+    # FindWindow takes the Window Class name (can be None if unknown), and the window's display text. https://stackoverflow.com/questions/7142342/get-window-position-size-with-python
+    # window_handle = FindWindow(None, "Acquisition Configuration")
+    # window_rect = GetWindowRect(window_handle)
+
+    # print(window_rect)
+    #
+    #
+    # Get mouse position fast. https://stackoverflow.com/questions/3698635/how-to-get-the-text-cursor-position-in-windows
+
+    def queryMousePosition(self):
+        pt = POINT()
+        windll.user32.GetCursorPos(byref(pt))
+        return {"x": pt.x, "y": pt.y}
+
+    def showCursorPosition(self):
+        rel_pos = {}
+        cur_pos = (0,0)
+        while True:
+            pos = self.queryMousePosition()
+            if cur_pos != pos:
+                cur_pos = pos
+                rel_pos["x"] = (cur_pos["x"] -self.window_rect[0]) / (self.window_rect[2] - self.window_rect[0])
+                rel_pos["y"] = (cur_pos["y"] -self.window_rect[1]) / (self.window_rect[3] - self.window_rect[1])
+                print(rel_pos)
+class POINT(Structure):
+    _fields_ = [("x", c_long), ("y", c_long)]
+
+
+
