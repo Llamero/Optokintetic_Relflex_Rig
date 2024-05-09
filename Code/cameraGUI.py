@@ -1,5 +1,3 @@
-import binascii
-import ctypes
 import math
 import os
 import sys
@@ -77,15 +75,18 @@ class CameraGui:
         global current_hwnd
         # get position of camera software window
         EnumWindows(self.__winEnumHandler, None)  # Get list of all visible windows
-        for key, value in self.enum_windows.items():
-            if window_name in value:  # https://realpython.com/python-string-contains-substring/
-                for b_key, b_value in self.bkgnd_windows.items():  # check that the window isn't already a background window
-                    if b_key == key:
-                        break
-                else:
-                    self.window_rect = GetWindowRect(key)
-                    self.current_hwnd = key
-                    return
+        for i in range(3): #Try three times to find the window
+            for key, value in self.enum_windows.items():
+                if window_name in value:  # https://realpython.com/python-string-contains-substring/
+                    for b_key, b_value in self.bkgnd_windows.items():  # check that the window isn't already a background window
+                        if b_key == key:
+                            break
+                    else:
+                        self.window_rect = GetWindowRect(key)
+                        self.current_hwnd = key
+                        return
+            else:
+                time.sleep(1)
         else:
             print("ERROR: Window Not Found!")
 
@@ -94,7 +95,7 @@ class CameraGui:
             self.pos_dict["Camera Select"][1] * self.window_rect[3])}  # Move to mouse position relative to top window corner
 
         # Move cursor to camera select and use mousewheel to select the camera
-        ctypes.windll.user32.SetCursorPos(rel_pos["x"] +self.window_rect[0],rel_pos["y"] +self.window_rect[
+        windll.user32.SetCursorPos(rel_pos["x"] +self.window_rect[0],rel_pos["y"] +self.window_rect[
             1])  # https://stackoverflow.com/questions/1181464/controlling-mouse-with-python - move cursor to camera select postion
         mouse_event(MOUSEEVENTF_WHEEL,rel_pos["x"] +self.window_rect[0],rel_pos["y"] +self.window_rect[1], 5 * WHEEL_DELTA,
                     0)  # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mouse_event - spin mouse wheel to top of menu list
@@ -111,7 +112,7 @@ class CameraGui:
                 return
             elif(self.index == 1 and nIR == 1): #If camera is nIR #2
                 return
-            elif(self.index == 2 and "color" in self.camera_type): #If camera is color
+            elif(self.index == 2 and "visible" in self.camera_type): #If camera is color
                 return
             mouse_event(MOUSEEVENTF_WHEEL,rel_pos["x"] +self.window_rect[0],rel_pos["y"] +self.window_rect[1],
                         -1 * WHEEL_DELTA, 0)  # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mouse_event - spin mouse wheel to desired camera
@@ -139,7 +140,7 @@ class CameraGui:
             delta *= -1
             n_steps *= -1
         for i in range(n_steps):
-            ctypes.windll.user32.SetCursorPos(pos[0], pos[
+            windll.user32.SetCursorPos(pos[0], pos[
                 1])  # https://stackoverflow.com/questions/1181464/controlling-mouse-with-python
             mouse_event(MOUSEEVENTF_WHEEL, pos[0], pos[1], delta,
                         0)  # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mouse_event
@@ -152,7 +153,7 @@ class CameraGui:
             if(type(self.pos_dict[button]) is tuple):
                 rel_pos = {"x": round(self.pos_dict[button][0] * self.half_screen_w + self.window_rect[0]), "y": round(
                     self.pos_dict[button][1] * self.half_screen_h + self.window_rect[1])} # https://stackoverflow.com/questions/1181464/controlling-mouse-with-python - move cursor to camera select postion
-            ctypes.windll.user32.SetCursorPos(rel_pos["x"], rel_pos["y"]) #Move mouse to button
+            windll.user32.SetCursorPos(rel_pos["x"], rel_pos["y"]) #Move mouse to button
             mouse_event(MOUSEEVENTF_LEFTDOWN, rel_pos["x"], rel_pos["y"], 0, 0) #Click mouse button
             time.sleep(0.01)
             mouse_event(MOUSEEVENTF_LEFTUP, rel_pos["x"], rel_pos["y"], 0, 0)
@@ -200,7 +201,7 @@ class CameraGui:
         pixels = pixel.average(round(self.pos_dict["Number Pixel"][0] * (self.window_rect[2] - self.window_rect[0]) + self.window_rect[0]), round(
                 self.pos_dict["Number Pixel"][1] * (self.window_rect[3] - self.window_rect[1]) + self.window_rect[1]), 24, 12)
         if(pixels[0] > 210):
-            self.camera_type = "color"
+            self.camera_type = "visible"
         else:
             self.camera_type = "nIR"
 
