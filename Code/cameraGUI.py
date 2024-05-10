@@ -148,6 +148,7 @@ class CameraGui:
 
     def pressButton(self, button):
         try:
+            pos = self.queryMousePosition() #Get current mouse position
             rel_pos = {"x": round(self.pos_dict["Preview"][0] * self.half_screen_w + self.window_rect[0]), "y": round(
                 self.pos_dict["Preview"][1] * self.half_screen_h + self.window_rect[1])} #Click on window if keypress is used
             if(type(self.pos_dict[button]) is tuple):
@@ -160,6 +161,7 @@ class CameraGui:
             time.sleep(0.05)
             if (type(self.pos_dict[button]) is str):
                 self.wsh.SendKeys(self.pos_dict[button]) # send the keys you want
+            windll.user32.SetCursorPos(pos["x"], pos["y"])  # Move mouse to button original position
 
         except KeyError:
             print("ERROR: No matches found for button key: " + str(button))
