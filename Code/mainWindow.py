@@ -1,11 +1,12 @@
+import collections
+import time
 import cameraGUI
 from os.path import abspath, join
 import sys
-from PyQt5 import QtGui, QtCore, QtWidgets, uic
+from PyQt5 import QtWidgets, uic
 from ctypes import windll
 import guiMapper
-from PyQt5.QtGui import QFont
-
+from collections import OrderedDict
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self, app):
@@ -19,11 +20,8 @@ class Ui(QtWidgets.QMainWindow):
         uic.loadUi(self.resourcePath('main_window.ui'), self)
         self.gui_model = guiMapper.initializeGuiModel(self)
         guiMapper.initializeEvents(self)
-
-
         self.setGeometry()
         self.show()
-
 
     def resourcePath(self, relative_path):
         #Get absolute path to resource, works for dev and for PyInstaller
@@ -67,9 +65,24 @@ class Ui(QtWidgets.QMainWindow):
             camera.pressButton("Preview")
     def bufferEvent(self):
         value = self.getValue(self.gui_model["buffer"]["number"])
-        print(value)
         for camera in self.camera_list:
+            camera.getBkgndWindows() #Create list of currently open windows
+            camera.selectCameraWindow() #Select GUI for current camera
+            stdby_cursor = camera.queryMouseState() #Get normal cursor handle number - this will be used to tell when cursor is busy
             camera.pressButton("Buffer")
+            time.sleep(0.5)
+            camera.pressTab(1)
+            camera.typeString(value)
+            camera.pressTab(4)
+            camera.pressReturn()
+            cur_cursor = None
+            time.sleep(0.3)
+            camera.selectCameraWindow()  # Return cursor to same position as before
+            while cur_cursor != stdby_cursor:
+                camera.selectCameraWindow()  # Select GUI for current camera
+                cur_cursor = camera.queryMouseState()
+                time.sleep(0.1)
+
     def saveAllEvent(self):
         for camera in self.camera_list:
             camera.pressButton("Save Seq")
@@ -122,3 +135,7 @@ class Ui(QtWidgets.QMainWindow):
         else:
             event.ignore()
 
+    def disableWidgets(self, widget):
+        self.gui_model["buffer"]["set"].setEnabled(False)
+    def enableWidgets(self, widget):
+        self.gui_model["buffer"]["set"].setEnabled(True)

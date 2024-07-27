@@ -1,15 +1,15 @@
 import math
 import os
-import sys
 import time
 from ctypes import windll, Structure, c_long, byref
-from win32gui import FindWindow, GetWindowRect, IsWindowVisible, GetWindowText, EnumWindows, MoveWindow, SendMessage
+from win32gui import FindWindow, GetWindowRect, IsWindowVisible, GetWindowText, EnumWindows, MoveWindow, SendMessage, GetCursorInfo
 from win32con import MOUSEEVENTF_WHEEL, WHEEL_DELTA, KEYEVENTF_KEYUP, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP, WM_CLOSE
 from win32api import mouse_event, keybd_event, GetSystemMetrics
 import win32com.client as comclt #used for pressing keyboard buttons
 from win32process import GetWindowThreadProcessId
 from psutil import Process, pid_exists
 import getpixelcolor as pixel
+from pyautogui import typewrite
 
 
 class CameraGui:
@@ -19,11 +19,11 @@ class CameraGui:
         self.enum_windows = dict()  # List of currently visible windows
         self.window_rect = dict()  # Bounding box of current window
         self.cur_pos = {"x": 0, "y": 0}  # Current absolute mouse position
-        self.pos_dict = {"Camera Select": (0.1, 0.1), "Preview": (0.5, 0.5), "Record": 'r',
+        self.pos_dict = {"Camera Select": (0.1, 0.1), "Preview": (0.3, 0.3), "Record": 'r',
                                "Play": 'p', "Pause": (0.5, 0.19), "Stop": (0.6, 0.19),
                                "Load Config": 'l', "Save Seq": 's', "Reset": (0.88, 0.19),
                                "High Frame Rate": 'h', "Buffer": 'b', "Save Metadata": (0.2, 0.97),
-                         "Number Pixel": (0.274, 0.192)
+                         "Number Pixel": (0.274, 0.192), "Select Window": (0.033, 0.8)
                          }#Position of widgets relative to window size
         self.current_hwnd = None #Current OS window object
         self.keypress_dict = {"Save seq": 's', "Load Config": 'l',
@@ -41,7 +41,7 @@ class CameraGui:
         self.y_offset = round((math.floor(self.index/2)+self.y_shift) * self.half_screen_h) #Calculate position of top left corner of window
         if(index > 1): #Add an extra offset to the second row to make the "Save Metadata" button visible
             self.y_offset += round(self.y_shift * self.half_screen_h)
-        self.bkgnd_windows = self.getWindowList() #List of all open windows at start of program - used to identify which window is new.
+        self.getBkgndWindows() #List of all open windows at start of program - used to identify which window is new.
         self.startSoftware() #Start the camera software
         self.getWindowPos("Acquisition Configuration")
         self.selectCamera(self.index)
@@ -64,6 +64,8 @@ class CameraGui:
         EnumWindows(self.__winEnumHandler, None)
         return self.enum_windows.copy()
 
+    def getBkgndWindows(self):
+        self.bkgnd_windows = self.getWindowList()
     def startSoftware(self):
         # Start the camera software
         os.startfile("C:\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Binaries\\GigEMetaDataDemo.exe")
@@ -125,6 +127,18 @@ class CameraGui:
         time.sleep(0.05)
         keybd_event(0x0D, 0, KEYEVENTF_KEYUP, 0)
 
+    def pressTab(self, count=1):
+        for i in range(count):
+            # Press the return key to go to the main window
+            keybd_event(0x09, 0, 0, 0)
+            time.sleep(0.05)
+            keybd_event(0x09, 0, KEYEVENTF_KEYUP, 0)
+            time.sleep(0.05)
+
+    def typeString(self, string):
+        string = str(string) #Cast variable to string
+        typewrite(string)
+
     def tileWindow(self):
         # Resize and reposition the main demo window
         self.getWindowPos("Sapera GigE-Vision MetaData Demo (Per-Frame Metadata)") #Get hwnd for window
@@ -145,6 +159,15 @@ class CameraGui:
             mouse_event(MOUSEEVENTF_WHEEL, pos[0], pos[1], delta,
                         0)  # https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mouse_event
             time.sleep(0.1)
+
+    def selectCameraWindow(self):
+        rel_pos = {"x": round(self.pos_dict["Select Window"][0] * self.half_screen_w + self.window_rect[0]), "y": round(
+            self.pos_dict["Select Window"][1] * self.half_screen_h + self.window_rect[1])}  # Click on window if keypress is used
+        windll.user32.SetCursorPos(rel_pos["x"], rel_pos["y"])  # Move mouse to button
+        mouse_event(MOUSEEVENTF_LEFTDOWN, rel_pos["x"], rel_pos["y"], 0, 0)  # Click mouse button
+        time.sleep(0.01)
+        mouse_event(MOUSEEVENTF_LEFTUP, rel_pos["x"], rel_pos["y"], 0, 0)
+        time.sleep(0.05)
 
     def pressButton(self, button):
         try:
@@ -179,6 +202,10 @@ class CameraGui:
         pt = POINT()
         windll.user32.GetCursorPos(byref(pt))
         return {"x": pt.x, "y": pt.y}
+
+    def queryMouseState(self):
+        cursor_info = GetCursorInfo()
+        return cursor_info[1]
 
     def showCursorPosition(self):
         rel_pos = {}
