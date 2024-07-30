@@ -69,7 +69,7 @@ class CameraGui:
     def startSoftware(self):
         # Start the camera software
         os.startfile("C:\\Program Files\\Teledyne DALSA\\Sapera\\Demos\\Binaries\\GigEMetaDataDemo.exe")
-        time.sleep(1)
+        time.sleep(2)
 
 
     def getWindowPos(self, window_name):

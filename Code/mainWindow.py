@@ -1,11 +1,13 @@
 import collections
 import time
 import cameraGUI
-from os.path import abspath, join
+from os.path import abspath, join, exists
 import sys
 from PyQt5 import QtWidgets, uic
 from ctypes import windll
 import guiMapper
+from datetime import datetime
+from os import mkdir
 from collections import OrderedDict
 
 class Ui(QtWidgets.QMainWindow):
@@ -60,9 +62,18 @@ class Ui(QtWidgets.QMainWindow):
             camera.pressButton("Reset")
     def previewEvent(self):
         value = self.getValue(self.gui_model["preview"]["number"])
-        print(value)
         for camera in self.camera_list:
-            camera.pressButton("Preview")
+            camera.selectCameraWindow() #Select GUI for current camera
+            stdby_cursor = camera.queryMouseState() #Get normal cursor handle number - this will be used to tell when cursor is busy
+            camera.pressButton("High Frame Rate")
+            camera.pressTab(1)
+            camera.typeString(value)
+            camera.pressReturn()
+        cur_cursor = None
+        while cur_cursor != stdby_cursor:
+            camera.selectCameraWindow()  # Select GUI for current camera
+            cur_cursor = camera.queryMouseState()
+            time.sleep(0.1)
     def bufferEvent(self):
         value = self.getValue(self.gui_model["buffer"]["number"])
         for camera in self.camera_list:
@@ -84,17 +95,71 @@ class Ui(QtWidgets.QMainWindow):
                 time.sleep(0.1)
 
     def saveAllEvent(self):
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d_%H-%M-%S")
+        dir = "E:\\" + dt_string + "\\"
+        if not exists(dir):
+            mkdir(dir)
+        self.saveMovieEvent(dir, dt_string)
+        self.saveMetadataEvent(dir, dt_string)
+
+    def saveMovieEvent(self, dir = None, dt_string = None):
+        print(1)
+        if dir is None or dt_string is None:
+            now = datetime.now()
+            dt_string = now.strftime("%Y-%m-%d_%H-%M-%S")
+            dir = "E:\\" + dt_string + "\\"
+            if not exists(dir):
+                mkdir(dir)
+        index = 1
+        print(2)
         for camera in self.camera_list:
+            print("a")
+            camera.selectCameraWindow() #Select GUI for current camera
+            print("b")
+            stdby_cursor = camera.queryMouseState() #Get normal cursor handle number - this will be used to tell when cursor is busy
+            print("c")
+            file_name = dir + dt_string + "_" + str(index)
+            print("d")
             camera.pressButton("Save Seq")
-            camera.pressButton("Save Metadata")
-    def saveMovieEvent(self):
+            print(3)
+            time.sleep(0.5)
+            camera.typeString(file_name)
+            camera.pressTab(3)
+            camera.pressReturn()
+            time.sleep(0.5)
+            index += 1
+        cur_cursor = None
+        while cur_cursor != stdby_cursor:
+            camera.selectCameraWindow()  # Select GUI for current camera
+            cur_cursor = camera.queryMouseState()
+            time.sleep(0.1)
+
+    def saveMetadataEvent(self, dir = None, dt_string = None):
+        if dir is None or dt_string is None:
+            now = datetime.now()
+            dt_string = now.strftime("%Y-%m-%d_%H-%M-%S")
+            index = 1
+            dir = "E:\\" + dt_string + "\\"
+            if not exists(dir):
+                mkdir(dir)
+        index = 1
         for camera in self.camera_list:
-            camera.pressButton("Save Seq")
+            camera.selectCameraWindow() #Select GUI for current camera
+            stdby_cursor = camera.queryMouseState() #Get normal cursor handle number - this will be used to tell when cursor is busy
             camera.pressButton("Save Metadata")
-    def saveMetadataEvent(self):
-        for camera in self.camera_list:
-            camera.pressButton("Save Seq")
-            camera.pressButton("Save Metadata")
+            time.sleep(0.5)
+            file_name = dir + dt_string + "_" + str(index)
+            camera.typeString(file_name)
+            camera.pressTab(3)
+            camera.pressReturn()
+            time.sleep(0.2)
+            index += 1
+        cur_cursor = None
+        while cur_cursor != stdby_cursor:
+            camera.selectCameraWindow()  # Select GUI for current camera
+            cur_cursor = camera.queryMouseState()
+            time.sleep(0.1)
     def loadConfigEvent(self):
         for camera in self.camera_list:
             camera.pressButton("Load Config")
