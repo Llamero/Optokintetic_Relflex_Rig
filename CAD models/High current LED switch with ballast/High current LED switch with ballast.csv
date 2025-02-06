@@ -1,0 +1,11 @@
+Item,Qty,Reference(s),Value,LibPart,Footprint,Datasheet,DNP,Manufacturer,Part
+1,4,"C1, C2, C3, C4",9.1mF,Device:C_Polarized_Small_US,Custom footprints:CAP_FKS_K21_PAN,https://industrial.panasonic.com/cdbs/www-data/pdf/RDE0000/ABA0000C1247.pdf,,Panasonic Electronic Components,EEE-FK1A912SM
+2,3,"D1, D2, D3",D_TVS,Device:D_TVS,Custom footprints:DO-214AB,https://www.yageo.com/upload/media/product/products/datasheet/cpc/tvs/SMDJ_1.pdf,,YAGEO,SMDJ60A/TR13
+3,4,"HS1, HS2, HS3, HS4",Heatsink,Mechanical:Heatsink,Custom footprints:31mm heatsink,https://wakefieldthermal.com/content/data_sheets/PIN%20FIN%20HEAT%20SINK.pdf,,Wakefield-Vette,906-31-2-23-2-B-0
+4,10,"J1, J2, J3, J4, J6, J7, J8, J9, J10, J11",Conn_01x01_Pin,Connector:Conn_01x01_Pin,Custom footprints:KEYSTONE_4928,https://www.keyelco.com/product-pdf.cfm?p=14309,,Keystone Electronics,4928
+5,1,J5,Conn_01x04_Pin,Connector:Conn_01x04_Pin,Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical_SMD_Pin1Right,https://cdn.harwin.com/pdfs/M20-877.pdf,,Harwin Inc.,M20-8770442
+6,3,"Q1, Q2, Q3",Q_NMOS_GDS,Device:Q_NMOS_GDS,Package_TO_SOT_SMD:TO-263-2,http://www.gofordsemi.com/u_file/product/709/GOFORD-GT035N10M.pdf,,Goford Semiconductor,GT035N10M
+7,1,R1,1000,Device:R,Resistor_SMD:R_1206_3216Metric,https://www.seielect.com/catalog/sei-rmcf_rmcp.pdf,,Stackpole Electronics Inc,RMCF1206FT1K00
+8,2,"R2, R5",0,Device:R,Custom footprints:R_2818,https://www.koaspeer.com/pdfs/TLRZ.pdf,,"KOA Speer Electronics, Inc.",TLRZ2BTTD
+9,3,"R3, R7, R9",25m,Device:R,Custom footprints:R_2818,https://www.vishay.com/docs/30347/wshp2818.pdf,,Vishay Dale,WSHP2818R0250FEA
+10,7,"R4, R6, R8, R10, R11, R12, R13",R,Device:R,Custom footprints:R_2818,~,,,

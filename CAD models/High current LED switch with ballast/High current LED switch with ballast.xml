@@ -1,0 +1,899 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>C:\Users\Ben\Documents\GitHub\High_current_LED_switch\High current LED switch with ballast\High current LED switch with ballast.kicad_sch</source>
+    <date>12/15/2023 7:17:40 PM</date>
+    <tool>Eeschema 7.0.1</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>High current LED switch with ballast.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="C1">
+      <value>9.1mF</value>
+      <footprint>Custom footprints:CAP_FKS_K21_PAN</footprint>
+      <datasheet>https://industrial.panasonic.com/cdbs/www-data/pdf/RDE0000/ABA0000C1247.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Panasonic Electronic Components</field>
+        <field name="Part">EEE-FK1A912SM</field>
+      </fields>
+      <libsource lib="Device" part="C_Polarized_Small_US" description="Polarized capacitor, small US symbol"/>
+      <property name="Manufacturer" value="Panasonic Electronic Components"/>
+      <property name="Part" value="EEE-FK1A912SM"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Polarized capacitor, small US symbol"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>744ac163-ea77-4125-a4ae-7032b3f484b0</tstamps>
+    </comp>
+    <comp ref="C2">
+      <value>9.1mF</value>
+      <footprint>Custom footprints:CAP_FKS_K21_PAN</footprint>
+      <datasheet>https://industrial.panasonic.com/cdbs/www-data/pdf/RDE0000/ABA0000C1247.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Panasonic Electronic Components</field>
+        <field name="Part">EEE-FK1A912SM</field>
+      </fields>
+      <libsource lib="Device" part="C_Polarized_Small_US" description="Polarized capacitor, small US symbol"/>
+      <property name="Manufacturer" value="Panasonic Electronic Components"/>
+      <property name="Part" value="EEE-FK1A912SM"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Polarized capacitor, small US symbol"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>30b7763a-6581-4a7c-8dd2-43d2473f3fcb</tstamps>
+    </comp>
+    <comp ref="C3">
+      <value>9.1mF</value>
+      <footprint>Custom footprints:CAP_FKS_K21_PAN</footprint>
+      <datasheet>https://industrial.panasonic.com/cdbs/www-data/pdf/RDE0000/ABA0000C1247.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Panasonic Electronic Components</field>
+        <field name="Part">EEE-FK1A912SM</field>
+      </fields>
+      <libsource lib="Device" part="C_Polarized_Small_US" description="Polarized capacitor, small US symbol"/>
+      <property name="Manufacturer" value="Panasonic Electronic Components"/>
+      <property name="Part" value="EEE-FK1A912SM"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Polarized capacitor, small US symbol"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>94d847e7-d144-4257-9c76-a1dbfbef4d5a</tstamps>
+    </comp>
+    <comp ref="C4">
+      <value>9.1mF</value>
+      <footprint>Custom footprints:CAP_FKS_K21_PAN</footprint>
+      <datasheet>https://industrial.panasonic.com/cdbs/www-data/pdf/RDE0000/ABA0000C1247.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Panasonic Electronic Components</field>
+        <field name="Part">EEE-FK1A912SM</field>
+      </fields>
+      <libsource lib="Device" part="C_Polarized_Small_US" description="Polarized capacitor, small US symbol"/>
+      <property name="Manufacturer" value="Panasonic Electronic Components"/>
+      <property name="Part" value="EEE-FK1A912SM"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Polarized capacitor, small US symbol"/>
+      <property name="ki_keywords" value="cap capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>81517dc3-a1ca-4c3d-8c8d-61dc0bcf8adf</tstamps>
+    </comp>
+    <comp ref="D1">
+      <value>D_TVS</value>
+      <footprint>Custom footprints:DO-214AB</footprint>
+      <datasheet>https://www.yageo.com/upload/media/product/products/datasheet/cpc/tvs/SMDJ_1.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">YAGEO</field>
+        <field name="Part">SMDJ60A/TR13</field>
+      </fields>
+      <libsource lib="Device" part="D_TVS" description="Bidirectional transient-voltage-suppression diode"/>
+      <property name="Manufacturer" value="YAGEO"/>
+      <property name="Part" value="SMDJ60A/TR13"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Bidirectional transient-voltage-suppression diode"/>
+      <property name="ki_keywords" value="diode TVS thyrector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3f60f64e-dc38-487d-bd4a-a6d511ba0b63</tstamps>
+    </comp>
+    <comp ref="D2">
+      <value>D_TVS</value>
+      <footprint>Custom footprints:DO-214AB</footprint>
+      <datasheet>https://www.yageo.com/upload/media/product/products/datasheet/cpc/tvs/SMDJ_1.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">YAGEO</field>
+        <field name="Part">SMDJ60A/TR13</field>
+      </fields>
+      <libsource lib="Device" part="D_TVS" description="Bidirectional transient-voltage-suppression diode"/>
+      <property name="Manufacturer" value="YAGEO"/>
+      <property name="Part" value="SMDJ60A/TR13"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Bidirectional transient-voltage-suppression diode"/>
+      <property name="ki_keywords" value="diode TVS thyrector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>8589b00a-ca43-41cb-b925-078ccf6dbfbd</tstamps>
+    </comp>
+    <comp ref="D3">
+      <value>D_TVS</value>
+      <footprint>Custom footprints:DO-214AB</footprint>
+      <datasheet>https://www.yageo.com/upload/media/product/products/datasheet/cpc/tvs/SMDJ_1.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">YAGEO</field>
+        <field name="Part">SMDJ60A/TR13</field>
+      </fields>
+      <libsource lib="Device" part="D_TVS" description="Bidirectional transient-voltage-suppression diode"/>
+      <property name="Manufacturer" value="YAGEO"/>
+      <property name="Part" value="SMDJ60A/TR13"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Bidirectional transient-voltage-suppression diode"/>
+      <property name="ki_keywords" value="diode TVS thyrector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>296fbfd4-6878-4e26-bb4b-42bd6a1ede48</tstamps>
+    </comp>
+    <comp ref="HS1">
+      <value>Heatsink</value>
+      <footprint>Custom footprints:31mm heatsink</footprint>
+      <datasheet>https://wakefieldthermal.com/content/data_sheets/PIN%20FIN%20HEAT%20SINK.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Wakefield-Vette</field>
+        <field name="Part">906-31-2-23-2-B-0</field>
+      </fields>
+      <libsource lib="Mechanical" part="Heatsink" description="Heatsink"/>
+      <property name="Manufacturer" value="Wakefield-Vette"/>
+      <property name="Part" value="906-31-2-23-2-B-0"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Heatsink"/>
+      <property name="ki_keywords" value="thermal heat temperature"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cc9577c9-fab4-47ae-b797-58e5d4ca9455</tstamps>
+    </comp>
+    <comp ref="HS2">
+      <value>Heatsink</value>
+      <footprint>Custom footprints:31mm heatsink</footprint>
+      <datasheet>https://wakefieldthermal.com/content/data_sheets/PIN%20FIN%20HEAT%20SINK.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Wakefield-Vette</field>
+        <field name="Part">906-31-2-23-2-B-0</field>
+      </fields>
+      <libsource lib="Mechanical" part="Heatsink" description="Heatsink"/>
+      <property name="Manufacturer" value="Wakefield-Vette"/>
+      <property name="Part" value="906-31-2-23-2-B-0"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Heatsink"/>
+      <property name="ki_keywords" value="thermal heat temperature"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>75c23ba9-152d-4950-90ff-2e24445b3e54</tstamps>
+    </comp>
+    <comp ref="HS3">
+      <value>Heatsink</value>
+      <footprint>Custom footprints:31mm heatsink</footprint>
+      <datasheet>https://wakefieldthermal.com/content/data_sheets/PIN%20FIN%20HEAT%20SINK.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Wakefield-Vette</field>
+        <field name="Part">906-31-2-23-2-B-0</field>
+      </fields>
+      <libsource lib="Mechanical" part="Heatsink" description="Heatsink"/>
+      <property name="Manufacturer" value="Wakefield-Vette"/>
+      <property name="Part" value="906-31-2-23-2-B-0"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Heatsink"/>
+      <property name="ki_keywords" value="thermal heat temperature"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ed1039f7-c1d0-4fdf-b687-bf28c9354024</tstamps>
+    </comp>
+    <comp ref="HS4">
+      <value>Heatsink</value>
+      <footprint>Custom footprints:31mm heatsink</footprint>
+      <datasheet>https://wakefieldthermal.com/content/data_sheets/PIN%20FIN%20HEAT%20SINK.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Wakefield-Vette</field>
+        <field name="Part">906-31-2-23-2-B-0</field>
+      </fields>
+      <libsource lib="Mechanical" part="Heatsink" description="Heatsink"/>
+      <property name="Manufacturer" value="Wakefield-Vette"/>
+      <property name="Part" value="906-31-2-23-2-B-0"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Heatsink"/>
+      <property name="ki_keywords" value="thermal heat temperature"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4ead04f8-fea0-4d86-a166-52ac3b1c6121</tstamps>
+    </comp>
+    <comp ref="J1">
+      <value>Conn_01x01_Pin</value>
+      <footprint>Custom footprints:KEYSTONE_4928</footprint>
+      <datasheet>https://www.keyelco.com/product-pdf.cfm?p=14309</datasheet>
+      <fields>
+        <field name="Manufacturer">Keystone Electronics</field>
+        <field name="Part">4928</field>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x01_Pin" description="Generic connector, single row, 01x01, script generated"/>
+      <property name="Manufacturer" value="Keystone Electronics"/>
+      <property name="Part" value="4928"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x01, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7c6626c8-17e9-4d2f-ae01-2a28136184a8</tstamps>
+    </comp>
+    <comp ref="J2">
+      <value>Conn_01x01_Pin</value>
+      <footprint>Custom footprints:KEYSTONE_4928</footprint>
+      <datasheet>https://www.keyelco.com/product-pdf.cfm?p=14309</datasheet>
+      <fields>
+        <field name="Manufacturer">Keystone Electronics</field>
+        <field name="Part">4928</field>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x01_Pin" description="Generic connector, single row, 01x01, script generated"/>
+      <property name="Manufacturer" value="Keystone Electronics"/>
+      <property name="Part" value="4928"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x01, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cfb17bb6-30ea-46df-8c4a-4d77500c420e</tstamps>
+    </comp>
+    <comp ref="J3">
+      <value>Conn_01x01_Pin</value>
+      <footprint>Custom footprints:KEYSTONE_4928</footprint>
+      <datasheet>https://www.keyelco.com/product-pdf.cfm?p=14309</datasheet>
+      <fields>
+        <field name="Manufacturer">Keystone Electronics</field>
+        <field name="Part">4928</field>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x01_Pin" description="Generic connector, single row, 01x01, script generated"/>
+      <property name="Manufacturer" value="Keystone Electronics"/>
+      <property name="Part" value="4928"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x01, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>07f84ee5-6500-463e-b2f0-486379afdaf8</tstamps>
+    </comp>
+    <comp ref="J4">
+      <value>Conn_01x01_Pin</value>
+      <footprint>Custom footprints:KEYSTONE_4928</footprint>
+      <datasheet>https://www.keyelco.com/product-pdf.cfm?p=14309</datasheet>
+      <fields>
+        <field name="Manufacturer">Keystone Electronics</field>
+        <field name="Part">4928</field>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x01_Pin" description="Generic connector, single row, 01x01, script generated"/>
+      <property name="Manufacturer" value="Keystone Electronics"/>
+      <property name="Part" value="4928"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x01, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a2fabbd3-9664-45dd-a7ea-f91df3125f3a</tstamps>
+    </comp>
+    <comp ref="J5">
+      <value>Conn_01x04_Pin</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical_SMD_Pin1Right</footprint>
+      <datasheet>https://cdn.harwin.com/pdfs/M20-877.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Harwin Inc.</field>
+        <field name="Part">M20-8770442</field>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x04_Pin" description="Generic connector, single row, 01x04, script generated"/>
+      <property name="Manufacturer" value="Harwin Inc."/>
+      <property name="Part" value="M20-8770442"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x04, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c706c771-70de-40a8-8ebf-aa00645f28d8</tstamps>
+    </comp>
+    <comp ref="J6">
+      <value>Conn_01x01_Pin</value>
+      <footprint>Custom footprints:KEYSTONE_4928</footprint>
+      <datasheet>https://www.keyelco.com/product-pdf.cfm?p=14309</datasheet>
+      <fields>
+        <field name="Manufacturer">Keystone Electronics</field>
+        <field name="Part">4928</field>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x01_Pin" description="Generic connector, single row, 01x01, script generated"/>
+      <property name="Manufacturer" value="Keystone Electronics"/>
+      <property name="Part" value="4928"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x01, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b19c106b-9ee9-4503-b605-4fbd298ca7d2</tstamps>
+    </comp>
+    <comp ref="J7">
+      <value>Conn_01x01_Pin</value>
+      <footprint>Custom footprints:KEYSTONE_4928</footprint>
+      <datasheet>https://www.keyelco.com/product-pdf.cfm?p=14309</datasheet>
+      <fields>
+        <field name="Manufacturer">Keystone Electronics</field>
+        <field name="Part">4928</field>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x01_Pin" description="Generic connector, single row, 01x01, script generated"/>
+      <property name="Manufacturer" value="Keystone Electronics"/>
+      <property name="Part" value="4928"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x01, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a4f0afb2-4bc1-430c-a227-22900cc56dbf</tstamps>
+    </comp>
+    <comp ref="J8">
+      <value>Conn_01x01_Pin</value>
+      <footprint>Custom footprints:KEYSTONE_4928</footprint>
+      <datasheet>https://www.keyelco.com/product-pdf.cfm?p=14309</datasheet>
+      <fields>
+        <field name="Manufacturer">Keystone Electronics</field>
+        <field name="Part">4928</field>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x01_Pin" description="Generic connector, single row, 01x01, script generated"/>
+      <property name="Manufacturer" value="Keystone Electronics"/>
+      <property name="Part" value="4928"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x01, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1d5e3be8-3061-42cf-9910-9ca6be74354b</tstamps>
+    </comp>
+    <comp ref="J9">
+      <value>Conn_01x01_Pin</value>
+      <footprint>Custom footprints:KEYSTONE_4928</footprint>
+      <datasheet>https://www.keyelco.com/product-pdf.cfm?p=14309</datasheet>
+      <fields>
+        <field name="Manufacturer">Keystone Electronics</field>
+        <field name="Part">4928</field>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x01_Pin" description="Generic connector, single row, 01x01, script generated"/>
+      <property name="Manufacturer" value="Keystone Electronics"/>
+      <property name="Part" value="4928"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x01, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cf20cff1-bde3-45b4-b06b-594b1040bc5c</tstamps>
+    </comp>
+    <comp ref="J10">
+      <value>Conn_01x01_Pin</value>
+      <footprint>Custom footprints:KEYSTONE_4928</footprint>
+      <datasheet>https://www.keyelco.com/product-pdf.cfm?p=14309</datasheet>
+      <fields>
+        <field name="Manufacturer">Keystone Electronics</field>
+        <field name="Part">4928</field>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x01_Pin" description="Generic connector, single row, 01x01, script generated"/>
+      <property name="Manufacturer" value="Keystone Electronics"/>
+      <property name="Part" value="4928"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x01, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e95ee84c-43de-4800-8399-ed703f8c094f</tstamps>
+    </comp>
+    <comp ref="J11">
+      <value>Conn_01x01_Pin</value>
+      <footprint>Custom footprints:KEYSTONE_4928</footprint>
+      <datasheet>https://www.keyelco.com/product-pdf.cfm?p=14309</datasheet>
+      <fields>
+        <field name="Manufacturer">Keystone Electronics</field>
+        <field name="Part">4928</field>
+      </fields>
+      <libsource lib="Connector" part="Conn_01x01_Pin" description="Generic connector, single row, 01x01, script generated"/>
+      <property name="Manufacturer" value="Keystone Electronics"/>
+      <property name="Part" value="4928"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x01, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>34f2d5f8-8a9c-4e48-857f-0b3853d3b149</tstamps>
+    </comp>
+    <comp ref="Q1">
+      <value>Q_NMOS_GDS</value>
+      <footprint>Package_TO_SOT_SMD:TO-263-2</footprint>
+      <datasheet>http://www.gofordsemi.com/u_file/product/709/GOFORD-GT035N10M.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Goford Semiconductor</field>
+        <field name="Part">GT035N10M</field>
+      </fields>
+      <libsource lib="Device" part="Q_NMOS_GDS" description="N-MOSFET transistor, gate/drain/source"/>
+      <property name="Manufacturer" value="Goford Semiconductor"/>
+      <property name="Part" value="GT035N10M"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="N-MOSFET transistor, gate/drain/source"/>
+      <property name="ki_keywords" value="transistor NMOS N-MOS N-MOSFET"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>56ecd5f1-652e-4ad5-b5b4-a78b2694352c</tstamps>
+    </comp>
+    <comp ref="Q2">
+      <value>Q_NMOS_GDS</value>
+      <footprint>Package_TO_SOT_SMD:TO-263-2</footprint>
+      <datasheet>http://www.gofordsemi.com/u_file/product/709/GOFORD-GT035N10M.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Goford Semiconductor</field>
+        <field name="Part">GT035N10M</field>
+      </fields>
+      <libsource lib="Device" part="Q_NMOS_GDS" description="N-MOSFET transistor, gate/drain/source"/>
+      <property name="Manufacturer" value="Goford Semiconductor"/>
+      <property name="Part" value="GT035N10M"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="N-MOSFET transistor, gate/drain/source"/>
+      <property name="ki_keywords" value="transistor NMOS N-MOS N-MOSFET"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b1bd7b1f-213e-48f0-8d4b-771d69d521c2</tstamps>
+    </comp>
+    <comp ref="Q3">
+      <value>Q_NMOS_GDS</value>
+      <footprint>Package_TO_SOT_SMD:TO-263-2</footprint>
+      <datasheet>http://www.gofordsemi.com/u_file/product/709/GOFORD-GT035N10M.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Goford Semiconductor</field>
+        <field name="Part">GT035N10M</field>
+      </fields>
+      <libsource lib="Device" part="Q_NMOS_GDS" description="N-MOSFET transistor, gate/drain/source"/>
+      <property name="Manufacturer" value="Goford Semiconductor"/>
+      <property name="Part" value="GT035N10M"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="N-MOSFET transistor, gate/drain/source"/>
+      <property name="ki_keywords" value="transistor NMOS N-MOS N-MOSFET"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9aff8722-9963-417c-b4a4-770f88922775</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>1000</value>
+      <footprint>Resistor_SMD:R_1206_3216Metric</footprint>
+      <datasheet>https://www.seielect.com/catalog/sei-rmcf_rmcp.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Stackpole Electronics Inc</field>
+        <field name="Part">RMCF1206FT1K00</field>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Manufacturer" value="Stackpole Electronics Inc"/>
+      <property name="Part" value="RMCF1206FT1K00"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>cddada1d-4a5a-4d06-82b7-c4b393f8285c</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>0</value>
+      <footprint>Custom footprints:R_2818</footprint>
+      <datasheet>https://www.koaspeer.com/pdfs/TLRZ.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">KOA Speer Electronics, Inc.</field>
+        <field name="Part">TLRZ2BTTD</field>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Manufacturer" value="KOA Speer Electronics, Inc."/>
+      <property name="Part" value="TLRZ2BTTD"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>65cd2d10-446c-4b3b-ab62-48699cf9c041</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>25m</value>
+      <footprint>Custom footprints:R_2818</footprint>
+      <datasheet>https://www.vishay.com/docs/30347/wshp2818.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Vishay Dale</field>
+        <field name="Part">WSHP2818R0250FEA</field>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Manufacturer" value="Vishay Dale"/>
+      <property name="Part" value="WSHP2818R0250FEA"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>63e15c05-1e37-4bbc-beb5-509221735bf2</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>R</value>
+      <footprint>Custom footprints:R_2818</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Manufacturer" value=""/>
+      <property name="Part" value=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>26731794-248b-4670-9167-255a02aa9d26</tstamps>
+    </comp>
+    <comp ref="R5">
+      <value>0</value>
+      <footprint>Custom footprints:R_2818</footprint>
+      <datasheet>https://www.koaspeer.com/pdfs/TLRZ.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">KOA Speer Electronics, Inc.</field>
+        <field name="Part">TLRZ2BTTD</field>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Manufacturer" value="KOA Speer Electronics, Inc."/>
+      <property name="Part" value="TLRZ2BTTD"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>09562993-2d64-40fa-a781-b03b55fca331</tstamps>
+    </comp>
+    <comp ref="R6">
+      <value>R</value>
+      <footprint>Custom footprints:R_2818</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Manufacturer" value=""/>
+      <property name="Part" value=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ca5f40dd-4f79-4777-8da0-06ca00e92331</tstamps>
+    </comp>
+    <comp ref="R7">
+      <value>25m</value>
+      <footprint>Custom footprints:R_2818</footprint>
+      <datasheet>https://www.vishay.com/docs/30347/wshp2818.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Vishay Dale</field>
+        <field name="Part">WSHP2818R0250FEA</field>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Manufacturer" value="Vishay Dale"/>
+      <property name="Part" value="WSHP2818R0250FEA"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>255744d2-8f35-4376-9f22-5df4902566fd</tstamps>
+    </comp>
+    <comp ref="R8">
+      <value>R</value>
+      <footprint>Custom footprints:R_2818</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Manufacturer" value=""/>
+      <property name="Part" value=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>62e06234-226e-4585-b67a-6079068ce3e0</tstamps>
+    </comp>
+    <comp ref="R9">
+      <value>25m</value>
+      <footprint>Custom footprints:R_2818</footprint>
+      <datasheet>https://www.vishay.com/docs/30347/wshp2818.pdf</datasheet>
+      <fields>
+        <field name="Manufacturer">Vishay Dale</field>
+        <field name="Part">WSHP2818R0250FEA</field>
+      </fields>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Manufacturer" value="Vishay Dale"/>
+      <property name="Part" value="WSHP2818R0250FEA"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b39a9bcc-9cde-44fe-ad6b-f11b8681b077</tstamps>
+    </comp>
+    <comp ref="R10">
+      <value>R</value>
+      <footprint>Custom footprints:R_2818</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Manufacturer" value=""/>
+      <property name="Part" value=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>592ff5ea-3a9a-4a32-a245-e182802f0aa6</tstamps>
+    </comp>
+    <comp ref="R11">
+      <value>R</value>
+      <footprint>Custom footprints:R_2818</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Manufacturer" value=""/>
+      <property name="Part" value=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>72909289-6913-4656-93ac-8471ba42d2d0</tstamps>
+    </comp>
+    <comp ref="R12">
+      <value>R</value>
+      <footprint>Custom footprints:R_2818</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Manufacturer" value=""/>
+      <property name="Part" value=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>58cf1714-368d-47b7-9711-b08105f4f419</tstamps>
+    </comp>
+    <comp ref="R13">
+      <value>R</value>
+      <footprint>Custom footprints:R_2818</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Manufacturer" value=""/>
+      <property name="Part" value=""/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="High current LED switch with ballast.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6c625fe5-1801-4abc-94d6-d69a29302ddc</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="Connector" part="Conn_01x01_Pin">
+      <description>Generic connector, single row, 01x01, script generated</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x01_Pin</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Conn_01x04_Pin">
+      <description>Generic connector, single row, 01x04, script generated</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x04_Pin</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="C_Polarized_Small_US">
+      <description>Polarized capacitor, small US symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>CP_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C_Polarized_Small_US</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="D_TVS">
+      <description>Bidirectional transient-voltage-suppression diode</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>TO-???*</fp>
+        <fp>*_Diode_*</fp>
+        <fp>*SingleDiode*</fp>
+        <fp>D_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">D_TVS</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A1" type="passive"/>
+        <pin num="2" name="A2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="Q_NMOS_GDS">
+      <description>N-MOSFET transistor, gate/drain/source</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">Q_NMOS_GDS</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="G" type="input"/>
+        <pin num="2" name="D" type="passive"/>
+        <pin num="3" name="S" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R">
+      <description>Resistor</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Mechanical" part="Heatsink">
+      <description>Heatsink</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Heatsink_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">HS</field>
+        <field name="Value">Heatsink</field>
+        <field name="Datasheet">~</field>
+      </fields>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="Connector">
+      <uri>C:\Program Files\KiCad\7.0\share\kicad\symbols\/Connector.kicad_sym</uri>
+    </library>
+    <library logical="Device">
+      <uri>C:\Program Files\KiCad\7.0\share\kicad\symbols\/Device.kicad_sym</uri>
+    </library>
+    <library logical="Mechanical">
+      <uri>C:\Program Files\KiCad\7.0\share\kicad\symbols\/Mechanical.kicad_sym</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="GND">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="C3" pin="2" pintype="passive"/>
+      <node ref="C4" pin="2" pintype="passive"/>
+      <node ref="D1" pin="2" pinfunction="A2" pintype="passive"/>
+      <node ref="D2" pin="2" pinfunction="A2" pintype="passive"/>
+      <node ref="D3" pin="2" pinfunction="A2" pintype="passive"/>
+      <node ref="J3" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="J4" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="J5" pin="3" pinfunction="Pin_3" pintype="passive"/>
+      <node ref="Q1" pin="3" pinfunction="S" pintype="passive"/>
+      <node ref="Q2" pin="3" pinfunction="S" pintype="passive"/>
+      <node ref="Q3" pin="3" pinfunction="S" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+    </net>
+    <net code="2" name="Net-(D1-A1)">
+      <node ref="D1" pin="1" pinfunction="A1" pintype="passive"/>
+      <node ref="J7" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="Q1" pin="2" pinfunction="D" pintype="passive"/>
+    </net>
+    <net code="3" name="Net-(D2-A1)">
+      <node ref="D2" pin="1" pinfunction="A1" pintype="passive"/>
+      <node ref="J9" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="Q2" pin="2" pinfunction="D" pintype="passive"/>
+    </net>
+    <net code="4" name="Net-(D3-A1)">
+      <node ref="D3" pin="1" pinfunction="A1" pintype="passive"/>
+      <node ref="J11" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="Q3" pin="2" pinfunction="D" pintype="passive"/>
+    </net>
+    <net code="5" name="Net-(J1-Pin_1)">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="C3" pin="1" pintype="passive"/>
+      <node ref="C4" pin="1" pintype="passive"/>
+      <node ref="J1" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="J2" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+    </net>
+    <net code="6" name="Net-(J5-Pin_1)">
+      <node ref="J5" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="Q1" pin="1" pinfunction="G" pintype="input"/>
+    </net>
+    <net code="7" name="Net-(J5-Pin_2)">
+      <node ref="J5" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="Q2" pin="1" pinfunction="G" pintype="input"/>
+    </net>
+    <net code="8" name="Net-(J5-Pin_4)">
+      <node ref="J5" pin="4" pinfunction="Pin_4" pintype="passive"/>
+      <node ref="Q3" pin="1" pinfunction="G" pintype="input"/>
+    </net>
+    <net code="9" name="Net-(J6-Pin_1)">
+      <node ref="J6" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+      <node ref="R5" pin="2" pintype="passive"/>
+      <node ref="R6" pin="1" pintype="passive"/>
+      <node ref="R7" pin="1" pintype="passive"/>
+    </net>
+    <net code="10" name="Net-(J8-Pin_1)">
+      <node ref="J8" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R10" pin="1" pintype="passive"/>
+      <node ref="R11" pin="1" pintype="passive"/>
+      <node ref="R8" pin="2" pintype="passive"/>
+      <node ref="R9" pin="2" pintype="passive"/>
+    </net>
+    <net code="11" name="Net-(J10-Pin_1)">
+      <node ref="J10" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R12" pin="2" pintype="passive"/>
+      <node ref="R13" pin="2" pintype="passive"/>
+    </net>
+    <net code="12" name="Net-(R2-Pad2)">
+      <node ref="R2" pin="2" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+    </net>
+    <net code="13" name="Net-(R3-Pad2)">
+      <node ref="R3" pin="2" pintype="passive"/>
+      <node ref="R5" pin="1" pintype="passive"/>
+    </net>
+    <net code="14" name="Net-(R6-Pad2)">
+      <node ref="R6" pin="2" pintype="passive"/>
+      <node ref="R8" pin="1" pintype="passive"/>
+    </net>
+    <net code="15" name="Net-(R7-Pad2)">
+      <node ref="R7" pin="2" pintype="passive"/>
+      <node ref="R9" pin="1" pintype="passive"/>
+    </net>
+    <net code="16" name="Net-(R10-Pad2)">
+      <node ref="R10" pin="2" pintype="passive"/>
+      <node ref="R12" pin="1" pintype="passive"/>
+    </net>
+    <net code="17" name="Net-(R11-Pad2)">
+      <node ref="R11" pin="2" pintype="passive"/>
+      <node ref="R13" pin="1" pintype="passive"/>
+    </net>
+  </nets>
+</export>
